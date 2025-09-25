@@ -1,0 +1,282 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ESG Risk Analysis Dashboard - Sophisticated Design System */
+
+@layer base {
+  :root {
+    /* Background System */
+    --background: 220 20% 6%;
+    --background-secondary: 220 15% 8%;
+    --background-tertiary: 220 12% 10%;
+    --foreground: 220 5% 95%;
+    --foreground-secondary: 220 5% 85%;
+
+    /* ESG Brand Colors */
+    --primary: 160 84% 39%;        /* Deep Emerald */
+    --primary-glow: 160 60% 50%;   /* Bright Emerald */
+    --primary-foreground: 220 20% 6%;
+
+    --secondary: 200 98% 25%;      /* Deep Ocean Blue */
+    --secondary-glow: 200 85% 40%; /* Bright Blue */
+    --secondary-foreground: 220 5% 95%;
+
+    --accent: 45 93% 55%;          /* Sustainable Gold */
+    --accent-glow: 45 85% 65%;     /* Bright Gold */
+    --accent-foreground: 220 20% 6%;
+
+    /* Status Colors */
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+    --danger: 0 84% 60%;
+    --info: 217 91% 60%;
+
+    /* Glass & Depth System */
+    --glass-bg: 220 15% 12%;
+    --glass-border: 220 20% 20%;
+    --glass-shadow: 220 50% 2%;
+    
+    --card: 220 15% 8%;
+    --card-foreground: 220 5% 95%;
+    --card-glass: 220 15% 12%;
+
+    /* Interactive Elements */
+    --border: 220 20% 15%;
+    --input: 220 20% 12%;
+    --ring: 160 84% 39%;
+    --muted: 220 15% 15%;
+    --muted-foreground: 220 5% 65%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)), hsl(var(--secondary-glow)));
+    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-glow)));
+    --gradient-glass: linear-gradient(135deg, 
+      hsla(var(--glass-bg), 0.8), 
+      hsla(var(--glass-bg), 0.4));
+    --gradient-hero: linear-gradient(135deg, 
+      hsl(var(--background)), 
+      hsl(var(--background-secondary)), 
+      hsl(var(--background-tertiary)));
+
+    /* Shadows & Depth */
+    --shadow-sm: 0 2px 8px hsla(var(--glass-shadow), 0.15);
+    --shadow-md: 0 8px 24px hsla(var(--glass-shadow), 0.2);
+    --shadow-lg: 0 16px 48px hsla(var(--glass-shadow), 0.25);
+    --shadow-glow: 0 0 40px hsla(var(--primary), 0.3);
+    --shadow-glow-accent: 0 0 40px hsla(var(--accent), 0.25);
+
+    /* Animations */
+    --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --radius: 0.75rem;
+  }
+
+  .light {
+    --background: 220 5% 98%;
+    --background-secondary: 220 10% 96%;
+    --background-tertiary: 220 15% 94%;
+    --foreground: 220 20% 8%;
+    --foreground-secondary: 220 15% 20%;
+
+    --glass-bg: 220 10% 96%;
+    --glass-border: 220 15% 85%;
+    --glass-shadow: 220 20% 30%;
+
+    --card: 220 5% 100%;
+    --card-foreground: 220 20% 8%;
+    --card-glass: 220 10% 98%;
+
+    --border: 220 15% 85%;
+    --input: 220 10% 94%;
+    --muted: 220 10% 90%;
+    --muted-foreground: 220 10% 40%;
+
+    --gradient-glass: linear-gradient(135deg, 
+      hsla(var(--glass-bg), 0.9), 
+      hsla(var(--glass-bg), 0.6));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter antialiased;
+    background: var(--gradient-hero);
+    min-height: 100vh;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted/20;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/40 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/60;
+  }
+}
+
+@layer components {
+  /* Glass Components */
+  .glass {
+    background: var(--gradient-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow: var(--shadow-md);
+  }
+
+  .glass-card {
+    @apply glass rounded-xl;
+  }
+
+  .glass-nav {
+    @apply glass;
+    backdrop-filter: blur(30px);
+  }
+
+  /* 3D Elements */
+  .depth-sm {
+    transform: translateZ(0);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .depth-md {
+    transform: translateZ(0);
+    box-shadow: var(--shadow-md);
+  }
+
+  .depth-lg {
+    transform: translateZ(0);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Hover Effects */
+  .hover-lift {
+    transition: var(--transition-smooth);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .hover-glow:hover {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .hover-glow-accent:hover {
+    box-shadow: var(--shadow-glow-accent);
+  }
+
+  /* Grid Layouts */
+  .grid-auto-fit {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  .grid-auto-fill {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
+
+  /* Text Gradients */
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .text-gradient-accent {
+    background: var(--gradient-accent);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Animation Classes */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out;
+  }
+}
+
+@layer utilities {
+  /* Animation Keyframes */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Utility Classes */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .text-shadow {
+    text-shadow: 0 2px 4px hsla(var(--glass-shadow), 0.3);
+  }
+
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px hsla(var(--glass-shadow), 0.4);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}

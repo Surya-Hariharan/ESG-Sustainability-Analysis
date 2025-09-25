@@ -1,0 +1,64 @@
+# Model artifacts
+models/*.joblib
+models/*.pkl
+
+# Reports generated data
+reports/predictions/
+reports/figures/
+reports/tables/
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Python packaging
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+# Logs and database dumps
+*.log
+*.sqlite3
+*.db
+*.sql
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Power BI / Tableau
+*.pbix
+*.twb
+*.twbx
+*.tde
+*.hyper
+
+# Optional: cache folders
+__pycache__/
+.cache/
+*.tmp
+*.bak
+
+# Environment config files (if you want to keep local secrets out)
+.env
