@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Leaf, Github, Linkedin, Mail, ExternalLink } from 'lucide-react';
+import { Leaf, Github, Linkedin, Mail, ArrowUpRight } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -116,7 +116,7 @@ const Footer = () => {
                       className="text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
                     >
                       {link.label}
-                      <ExternalLink className="h-3 w-3" />
+                      <ArrowUpRight className="h-3 w-3" />
                     </a>
                   ) : (
                     <Link

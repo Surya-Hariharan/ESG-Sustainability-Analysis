@@ -45,4 +45,5 @@ declare module 'lucide-react' {
   export const ChevronUp: Icon;
   export const ChevronRight: Icon;
   export const MoreHorizontal: Icon;
+  export const ArrowUpRight: Icon;
 }
