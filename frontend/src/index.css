@@ -7,25 +7,25 @@
 /* CSS Custom Properties for theming */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 199 89% 48%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 148 83% 58%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 158 100% 81%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 199 89% 48%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 148 83% 58%;
     --radius: 0.5rem;
 
     /* ESG-specific colors */
@@ -59,9 +59,7 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 199 89% 48%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }

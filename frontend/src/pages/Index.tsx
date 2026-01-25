@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import LightPillar from '@/components/LightPillar';
+import Footer from '@/components/Footer';
 
 const Index = () => {
   const features = [
@@ -45,8 +46,8 @@ const Index = () => {
       {/* Background Light Pillar */}
       <div className="fixed inset-0 z-0 opacity-30">
         <LightPillar
-          topColor="#5227FF"
-          bottomColor="#FF9FFC"
+          topColor="#9429FF"
+          bottomColor="#9EFFCD"
           intensity={1}
           rotationSpeed={0.3}
           glowAmount={0.002}
@@ -210,11 +211,7 @@ const Index = () => {
         </section>
 
         {/* Footer */}
-        <footer className="py-12 px-4 border-t border-white/10 backdrop-blur-xl bg-background/60">
-          <div className="max-w-6xl mx-auto text-center text-muted-foreground">
-            <p>&copy; 2026 ESG Analytics Platform. All rights reserved.</p>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </div>
   );

@@ -40,20 +40,22 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="flex flex-col min-h-screen bg-background text-foreground">
           <Navigation />
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/companies" element={<Companies />} />
-              <Route path="/sectors" element={<Sectors />} />
-              <Route path="/controversies" element={<Controversies />} />
-              <Route path="/predictor" element={<Predictor />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/about" element={<About />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
+          <main className="flex-1">
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/companies" element={<Companies />} />
+                <Route path="/sectors" element={<Sectors />} />
+                <Route path="/controversies" element={<Controversies />} />
+                <Route path="/predictor" element={<Predictor />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/about" element={<About />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </main>
         </div>
       </Router>
     </QueryClientProvider>

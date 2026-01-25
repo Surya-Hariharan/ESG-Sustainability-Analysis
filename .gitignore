@@ -4,10 +4,6 @@
 .env
 .env.*
 !.env.example
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
 # ========================================
 # Python
@@ -35,10 +31,25 @@ build/
 *.whl
 .eggs/
 
-# Version managers
-.python-version
-Pipfile.lock
-poetry.lock
+# ========================================
+# Frontend (Node.js)
+# ========================================
+**/node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/.cache/
+frontend/coverage/
+frontend/.env
+frontend/.env.local
+frontend/.vercel
+frontend/bun.lockb
+
+# Lock files (keep package.json, ignore locks)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
 # ========================================
 # Testing & Coverage
@@ -55,14 +66,6 @@ nosetests.xml
 coverage/
 
 # ========================================
-# Linting & Type Checking
-# ========================================
-.mypy_cache/
-.dmypy.json
-dmypy.json
-.ruff_cache/
-
-# ========================================
 # ML & Data
 # ========================================
 # Model artifacts (keep metadata)
@@ -70,7 +73,7 @@ models/*.joblib
 models/*.pkl
 !models/*.meta.json
 
-# Data files (exclude large datasets)
+# Data files
 data/raw/*.csv
 data/raw/*.xlsx
 data/raw/*.json
@@ -99,74 +102,33 @@ logs/
 *.sql.bak
 
 # ========================================
-# Frontend (Node.js)
-# ========================================
-frontend/node_modules/
-frontend/dist/
-frontend/build/
-frontend/.vite/
-frontend/.cache/
-frontend/coverage/
-frontend/.env.local
-frontend/.vercel
-
-# ========================================
 # IDE / Editor
 # ========================================
-# VSCode
 .vscode/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-
-# JetBrains
 .idea/
-
-# Sublime
 *.sublime-project
 *.sublime-workspace
-
-# Vim/Emacs
 *.swp
 *.swo
 *~
-
-# Eclipse
 .project
 .pydevproject
 
 # ========================================
 # OS Files
 # ========================================
-# macOS
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
-
-# Windows
 ehthumbs.db
 Thumbs.db
 Desktop.ini
-
-# ========================================
-# Docker & Deployment
-# ========================================
-# Docker volumes
-*.dockerignore.bak
-docker-compose.override.yml
-
-# Kubernetes
-*.kubeconfig
-
-# ========================================
-# Reports & Generated Files
-# ========================================
-reports/predictions/
-reports/figures/
-reports/tables/
 
 # ========================================
 # Cache & Temp
@@ -174,6 +136,17 @@ reports/tables/
 .cache/
 *.tmp
 *.bak
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
 *.tar.gz
 *.zip
+
+# ========================================
+# Reports & Generated Files
+# ========================================
+reports/predictions/
+reports/figures/
+reports/tables/
 
