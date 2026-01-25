@@ -1,0 +1,6 @@
+# Vercel
+.vercel
+
+# Build output
+dist/
+build/
