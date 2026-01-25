@@ -1,437 +1,223 @@
-import { memo, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-  Building2,
-  TrendingUp,
-  AlertTriangle,
-  Leaf,
-  Users,
-  Scale,
-  ArrowRight,
-  BarChart3,
-} from 'lucide-react';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-  Button,
-  Badge,
-  Skeleton,
-} from '@/components/ui';
-import { BarChart, PieChart } from '@/components/charts';
-import { useApi } from '@/hooks';
-import { apiService } from '@/services/api';
-import { formatNumber, getRiskColor } from '@/lib/utils';
+import { ArrowRight, TrendingUp, Shield, BarChart3, Zap } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import LightPillar from '@/components/LightPillar';
 
-// Animation variants for staggered children
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4 },
-  },
-};
-
-// Stat Card Component - Isolated and memoized
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  description?: string;
-  icon: React.ReactNode;
-  trend?: { value: number; isPositive: boolean };
-  isLoading?: boolean;
-}
-
-const StatCard = memo(function StatCard({
-  title,
-  value,
-  description,
-  icon,
-  trend,
-  isLoading,
-}: StatCardProps) {
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-8 w-8 rounded" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-8 w-20 mb-1" />
-          <Skeleton className="h-3 w-32" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center text-primary">
-          {icon}
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {(description || trend) && (
-          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-            {trend && (
-              <span
-                className={
-                  trend.isPositive ? 'text-green-500' : 'text-red-500'
-                }
-              >
-                {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
-              </span>
-            )}
-            {description}
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  );
-});
-
-// Feature Card Component - For navigation
-interface FeatureCardProps {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  href: string;
-  color: string;
-}
-
-const FeatureCard = memo(function FeatureCard({
-  title,
-  description,
-  icon,
-  href,
-  color,
-}: FeatureCardProps) {
-  return (
-    <Link to={href} className="block group">
-      <Card className="h-full hover:shadow-lg transition-all hover:border-primary/50">
-        <CardHeader>
-          <div
-            className="h-12 w-12 rounded-lg flex items-center justify-center mb-3"
-            style={{ backgroundColor: `${color}20` }}
-          >
-            <div style={{ color }}>{icon}</div>
-          </div>
-          <CardTitle className="text-lg group-hover:text-primary transition-colors">
-            {title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </CardContent>
-        <CardFooter>
-          <span className="text-sm text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
-            Explore <ArrowRight className="h-4 w-4" />
-          </span>
-        </CardFooter>
-      </Card>
-    </Link>
-  );
-});
-
-// Top Companies List - Isolated component
-interface Company {
-  name: string;
-  sector: string;
-  esg_risk_rating: string;
-  total_esg_risk_score: number;
-}
-
-const TopCompaniesList = memo(function TopCompaniesList({
-  companies,
-  isLoading,
-}: {
-  companies: Company[];
-  isLoading: boolean;
-}) {
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Top Performing Companies</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex items-center gap-3">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="flex-1">
-                <Skeleton className="h-4 w-32 mb-1" />
-                <Skeleton className="h-3 w-24" />
-              </div>
-              <Skeleton className="h-6 w-16" />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-base">Top Performing Companies</CardTitle>
-        <Link to="/companies">
-          <Button variant="ghost" size="sm">
-            View All
-          </Button>
-        </Link>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {companies.slice(0, 5).map((company, index) => (
-          <div key={index} className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
-              {index + 1}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-medium truncate">{company.name}</p>
-              <p className="text-xs text-muted-foreground truncate">
-                {company.sector}
-              </p>
-            </div>
-            <Badge
-              variant={
-                company.esg_risk_rating === 'Low'
-                  ? 'success'
-                  : company.esg_risk_rating === 'Medium'
-                  ? 'warning'
-                  : 'destructive'
-              }
-            >
-              {company.total_esg_risk_score.toFixed(1)}
-            </Badge>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  );
-});
-
-// Main Dashboard Page
-function Index() {
-  // Fetch top companies
-  const { data: topCompanies, isLoading: companiesLoading } = useApi<Company[]>(
-    'top-companies',
-    () => apiService.getTopCompanies(10),
-    { cacheTime: 5 * 60 * 1000 }
-  );
-
-  // Fetch sector averages
-  const { data: sectorData, isLoading: sectorsLoading } = useApi(
-    'sector-averages',
-    () => apiService.getSectorAverages(),
-    { cacheTime: 5 * 60 * 1000 }
-  );
-
-  // Prepare chart data
-  const sectorChartData = useMemo(() => {
-    if (!sectorData) return [];
-    return sectorData.slice(0, 8).map((sector: { sector: string; avg_score: number }) => ({
-      name: sector.sector.length > 15 ? sector.sector.slice(0, 15) + '...' : sector.sector,
-      value: sector.avg_score,
-    }));
-  }, [sectorData]);
-
-  const riskDistributionData = useMemo(() => {
-    if (!topCompanies) return [];
-    const distribution = { Low: 0, Medium: 0, High: 0, Severe: 0 };
-    topCompanies.forEach((company) => {
-      const rating = company.esg_risk_rating as keyof typeof distribution;
-      if (distribution[rating] !== undefined) {
-        distribution[rating]++;
-      }
-    });
-    return Object.entries(distribution).map(([name, value]) => ({
-      name,
-      value,
-      color: getRiskColor(name),
-    }));
-  }, [topCompanies]);
-
+const Index = () => {
   const features = [
     {
-      title: 'Companies',
-      description: 'Explore ESG ratings and performance metrics for thousands of companies.',
-      icon: <Building2 className="h-6 w-6" />,
-      href: '/companies',
-      color: '#3b82f6',
+      icon: TrendingUp,
+      title: 'ESG Analytics',
+      description: 'Comprehensive environmental, social, and governance metrics analysis',
+      color: 'from-green-500 to-emerald-600',
     },
     {
-      title: 'Sector Analysis',
-      description: 'Compare ESG performance across different industry sectors.',
-      icon: <BarChart3 className="h-6 w-6" />,
-      href: '/sectors',
-      color: '#10b981',
+      icon: Shield,
+      title: 'Risk Assessment',
+      description: 'AI-powered risk prediction and controversy detection',
+      color: 'from-blue-500 to-cyan-600',
     },
     {
-      title: 'Controversies',
-      description: 'Track and analyze ESG-related controversies and incidents.',
-      icon: <AlertTriangle className="h-6 w-6" />,
-      href: '/controversies',
-      color: '#f59e0b',
+      icon: BarChart3,
+      title: 'Sector Insights',
+      description: 'Industry-wide comparisons and benchmarking',
+      color: 'from-purple-500 to-pink-600',
     },
     {
-      title: 'Risk Predictor',
-      description: 'Use AI to predict ESG risk levels based on company metrics.',
-      icon: <TrendingUp className="h-6 w-6" />,
-      href: '/predictor',
-      color: '#8b5cf6',
+      icon: Zap,
+      title: 'Real-time Data',
+      description: 'Up-to-date company performance and sustainability scores',
+      color: 'from-orange-500 to-red-600',
     },
   ];
 
+  const stats = [
+    { value: '10,000+', label: 'Companies Analyzed' },
+    { value: '95%', label: 'Prediction Accuracy' },
+    { value: '50+', label: 'Industries Covered' },
+    { value: '24/7', label: 'Real-time Monitoring' },
+  ];
+
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="space-y-8"
-    >
-      {/* Hero Section */}
-      <motion.section variants={itemVariants} className="text-center py-8">
-        <h1 className="text-4xl font-bold tracking-tight mb-4">
-          ESG Sustainability Analytics
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Comprehensive environmental, social, and governance data analysis platform
-          for informed investment decisions.
-        </p>
-      </motion.section>
+    <div className="relative min-h-screen">
+      {/* Background Light Pillar */}
+      <div className="fixed inset-0 z-0 opacity-30">
+        <LightPillar
+          topColor="#5227FF"
+          bottomColor="#FF9FFC"
+          intensity={1}
+          rotationSpeed={0.3}
+          glowAmount={0.002}
+          pillarWidth={3}
+          pillarHeight={0.4}
+          noiseIntensity={0.5}
+          pillarRotation={25}
+          interactive={false}
+          mixBlendMode="screen"
+          quality="high"
+        />
+      </div>
 
-      {/* Stats Grid */}
-      <motion.section variants={itemVariants}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            title="Total Companies"
-            value={formatNumber(topCompanies?.length || 0)}
-            description="Companies analyzed"
-            icon={<Building2 className="h-4 w-4" />}
-            isLoading={companiesLoading}
-          />
-          <StatCard
-            title="Environment Score"
-            value="67.4"
-            description="Average across sectors"
-            icon={<Leaf className="h-4 w-4" />}
-            trend={{ value: 3.2, isPositive: true }}
-            isLoading={sectorsLoading}
-          />
-          <StatCard
-            title="Social Score"
-            value="58.2"
-            description="Average across sectors"
-            icon={<Users className="h-4 w-4" />}
-            trend={{ value: 1.5, isPositive: true }}
-            isLoading={sectorsLoading}
-          />
-          <StatCard
-            title="Governance Score"
-            value="72.1"
-            description="Average across sectors"
-            icon={<Scale className="h-4 w-4" />}
-            trend={{ value: 0.8, isPositive: false }}
-            isLoading={sectorsLoading}
-          />
-        </div>
-      </motion.section>
+      {/* Content Wrapper - properly isolated from background */}
+      <div className="relative z-10">
+        {/* Hero Section */}
+        <section className="min-h-[80vh] flex items-center justify-center px-4 py-20">
+          <div className="max-w-6xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-purple-500 to-secondary bg-clip-text text-transparent">
+                ESG Sustainability
+                <br />
+                Analytics Platform
+              </h1>
+              <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+                Unlock powerful insights into corporate sustainability performance with AI-driven
+                analytics and comprehensive ESG metrics
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Link to="/companies">
+                  <Button size="lg" className="rounded-full px-8 group">
+                    Explore Companies
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+                <Link to="/predictor">
+                  <Button size="lg" variant="outline" className="rounded-full px-8">
+                    Try Risk Predictor
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </section>
 
-      {/* Charts Section */}
-      <motion.section variants={itemVariants}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <BarChart
-            data={sectorChartData}
-            dataKey="value"
-            xAxisKey="name"
-            title="Average ESG Score by Sector"
-            description="Top 8 sectors by average score"
-            colorByValue
-            height={300}
-          />
-          <PieChart
-            data={riskDistributionData}
-            title="Risk Level Distribution"
-            description="Distribution of companies by risk rating"
-            height={300}
-            innerRadius={50}
-            outerRadius={100}
-          />
-        </div>
-      </motion.section>
+        {/* Stats Section */}
+        <section className="py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {stats.map((stat, index) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Card className="backdrop-blur-xl bg-background/60 border-white/10">
+                    <CardContent className="p-6 text-center">
+                      <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
+                        {stat.value}
+                      </div>
+                      <div className="text-sm text-muted-foreground">{stat.label}</div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-      {/* Feature Cards */}
-      <motion.section variants={itemVariants}>
-        <h2 className="text-2xl font-bold mb-6">Explore Analytics</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {features.map((feature) => (
-            <FeatureCard key={feature.title} {...feature} />
-          ))}
-        </div>
-      </motion.section>
+        {/* Features Section */}
+        <section className="py-20 px-4">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                Powerful Features for
+                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  {' '}
+                  Sustainable Insights
+                </span>
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Everything you need to make informed decisions about corporate sustainability
+              </p>
+            </motion.div>
 
-      {/* Top Companies */}
-      <motion.section variants={itemVariants}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <TopCompaniesList
-            companies={topCompanies || []}
-            isLoading={companiesLoading}
-          />
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Link to="/predictor" className="block">
-                <Button variant="outline" className="w-full justify-start">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Predict ESG Risk
-                </Button>
-              </Link>
-              <Link to="/companies" className="block">
-                <Button variant="outline" className="w-full justify-start">
-                  <Building2 className="h-4 w-4 mr-2" />
-                  Search Companies
-                </Button>
-              </Link>
-              <Link to="/reports" className="block">
-                <Button variant="outline" className="w-full justify-start">
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  View Reports
-                </Button>
-              </Link>
-              <Link to="/controversies" className="block">
-                <Button variant="outline" className="w-full justify-start">
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  Check Controversies
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      </motion.section>
-    </motion.div>
+            <div className="grid md:grid-cols-2 gap-6">
+              {features.map((feature, index) => (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Card className="backdrop-blur-xl bg-background/60 border-white/10 hover:bg-background/80 transition-all duration-300 group">
+                    <CardContent className="p-8">
+                      <div className="flex items-start space-x-4">
+                        <div
+                          className={`p-3 rounded-xl bg-gradient-to-r ${feature.color} text-white group-hover:scale-110 transition-transform`}
+                        >
+                          <feature.icon className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                          <p className="text-muted-foreground">{feature.description}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20 px-4">
+          <div className="max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <Card className="backdrop-blur-xl bg-gradient-to-r from-primary/10 to-secondary/10 border-white/20">
+                <CardContent className="p-12 text-center">
+                  <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                    Ready to Transform Your ESG Analysis?
+                  </h2>
+                  <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                    Start exploring comprehensive sustainability data and AI-powered insights today
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Link to="/sectors">
+                      <Button size="lg" className="rounded-full px-8">
+                        View Sector Analytics
+                      </Button>
+                    </Link>
+                    <Link to="/about">
+                      <Button size="lg" variant="outline" className="rounded-full px-8">
+                        Learn More
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="py-12 px-4 border-t border-white/10 backdrop-blur-xl bg-background/60">
+          <div className="max-w-6xl mx-auto text-center text-muted-foreground">
+            <p>&copy; 2026 ESG Analytics Platform. All rights reserved.</p>
+          </div>
+        </footer>
+      </div>
+    </div>
   );
-}
+};
 
-export default memo(Index);
+export default Index;

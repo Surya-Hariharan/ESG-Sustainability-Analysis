@@ -1,210 +1,127 @@
-import { useState, useCallback, memo } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  LayoutDashboard,
-  Building2,
-  PieChart,
-  AlertTriangle,
-  Brain,
-  FileText,
-  Info,
-  Menu,
-  X,
-  Leaf,
-} from 'lucide-react';
+import { Menu, X, Leaf } from 'lucide-react';
+import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui';
-import { useIsMobile } from '@/hooks';
 
-interface NavItem {
-  label: string;
-  path: string;
-  icon: React.ReactNode;
-}
+const Navigation = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
-const navItems: NavItem[] = [
-  { label: 'Dashboard', path: '/', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { label: 'Companies', path: '/companies', icon: <Building2 className="h-4 w-4" /> },
-  { label: 'Sectors', path: '/sectors', icon: <PieChart className="h-4 w-4" /> },
-  { label: 'Controversies', path: '/controversies', icon: <AlertTriangle className="h-4 w-4" /> },
-  { label: 'Predictor', path: '/predictor', icon: <Brain className="h-4 w-4" /> },
-  { label: 'Reports', path: '/reports', icon: <FileText className="h-4 w-4" /> },
-  { label: 'About', path: '/about', icon: <Info className="h-4 w-4" /> },
-];
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
 
-// Desktop Navigation Link - Memoized to prevent unnecessary re-renders
-const NavLink = memo(function NavLink({
-  item,
-  isActive,
-}: {
-  item: NavItem;
-  isActive: boolean;
-}) {
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navItems = [
+    { path: '/', label: 'Home' },
+    { path: '/companies', label: 'Companies' },
+    { path: '/sectors', label: 'Sectors' },
+    { path: '/predictor', label: 'Predictor' },
+    { path: '/controversies', label: 'Controversies' },
+    { path: '/reports', label: 'Reports' },
+    { path: '/about', label: 'About' },
+  ];
+
   return (
-    <Link
-      to={item.path}
-      className={cn(
-        'relative flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors',
-        'hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        isActive ? 'text-primary' : 'text-muted-foreground'
-      )}
-    >
-      {item.icon}
-      {item.label}
-      {isActive && (
-        <motion.div
-          layoutId="navbar-indicator"
-          className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
-          initial={false}
-          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-        />
-      )}
-    </Link>
-  );
-});
+    <>
+      {/* Floating Navigation */}
+      <nav
+        className={cn(
+          'fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300',
+          'w-[95%] max-w-7xl mx-auto'
+        )}
+      >
+        <div
+          className={cn(
+            'backdrop-blur-xl bg-background/60 border border-white/10 rounded-2xl shadow-2xl',
+            'transition-all duration-300',
+            isScrolled ? 'shadow-lg bg-background/80' : 'shadow-xl'
+          )}
+        >
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              {/* Logo */}
+              <Link to="/" className="flex items-center space-x-2 group">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
+                  <Leaf className="h-8 w-8 text-primary relative z-10 group-hover:rotate-12 transition-transform" />
+                </div>
+                <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  ESG Analytics
+                </span>
+              </Link>
 
-// Mobile Navigation Link - Memoized
-const MobileNavLink = memo(function MobileNavLink({
-  item,
-  isActive,
-  onClick,
-}: {
-  item: NavItem;
-  isActive: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <Link
-      to={item.path}
-      onClick={onClick}
-      className={cn(
-        'flex items-center gap-3 px-4 py-3 text-base font-medium transition-colors',
-        'hover:bg-accent hover:text-accent-foreground rounded-lg',
-        isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
-      )}
-    >
-      {item.icon}
-      {item.label}
-    </Link>
-  );
-});
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center space-x-1">
+                {navItems.map((item) => (
+                  <Link key={item.path} to={item.path}>
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        'relative rounded-xl transition-all duration-200',
+                        location.pathname === item.path
+                          ? 'text-primary font-semibold'
+                          : 'text-foreground/70 hover:text-foreground'
+                      )}
+                    >
+                      {location.pathname === item.path && (
+                        <span className="absolute inset-0 bg-primary/10 rounded-xl" />
+                      )}
+                      <span className="relative z-10">{item.label}</span>
+                    </Button>
+                  </Link>
+                ))}
+              </div>
 
-// Mobile Menu Overlay
-const MobileMenu = memo(function MobileMenu({
-  isOpen,
-  onClose,
-  currentPath,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  currentPath: string;
-}) {
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
-          />
-          {/* Menu Panel */}
-          <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed top-0 right-0 bottom-0 z-50 w-72 bg-background border-l shadow-xl md:hidden"
-          >
-            <div className="flex items-center justify-between p-4 border-b">
-              <span className="font-semibold text-lg">Navigation</span>
-              <Button variant="ghost" size="icon" onClick={onClose}>
-                <X className="h-5 w-5" />
+              {/* Mobile Menu Button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden rounded-xl"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
             </div>
-            <nav className="flex flex-col gap-1 p-4">
-              {navItems.map((item) => (
-                <MobileNavLink
-                  key={item.path}
-                  item={item}
-                  isActive={currentPath === item.path}
-                  onClick={onClose}
-                />
-              ))}
-            </nav>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-});
 
-// Main Navigation Component
-function Navigation() {
-  const location = useLocation();
-  const isMobile = useIsMobile();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const toggleMobileMenu = useCallback(() => {
-    setMobileMenuOpen((prev) => !prev);
-  }, []);
-
-  const closeMobileMenu = useCallback(() => {
-    setMobileMenuOpen(false);
-  }, []);
-
-  return (
-    <header className="sticky top-0 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary text-primary-foreground">
-              <Leaf className="h-5 w-5" />
-            </div>
-            <span className="font-bold text-lg hidden sm:inline-block group-hover:text-primary transition-colors">
-              ESG Analytics
-            </span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.path}
-                item={item}
-                isActive={location.pathname === item.path}
-              />
-            ))}
-          </nav>
-
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle menu"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
+            {/* Mobile Menu */}
+            {isMobileMenuOpen && (
+              <div className="md:hidden mt-4 pt-4 border-t border-white/10 space-y-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        'w-full justify-start rounded-xl',
+                        location.pathname === item.path
+                          ? 'text-primary font-semibold bg-primary/10'
+                          : 'text-foreground/70 hover:text-foreground'
+                      )}
+                    >
+                      {item.label}
+                    </Button>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Mobile Menu */}
-      {isMobile && (
-        <MobileMenu
-          isOpen={mobileMenuOpen}
-          onClose={closeMobileMenu}
-          currentPath={location.pathname}
-        />
-      )}
-    </header>
+      {/* Spacer to prevent content from going under navbar */}
+      <div className="h-24" />
+    </>
   );
-}
+};
 
-export default memo(Navigation);
+export default Navigation;
