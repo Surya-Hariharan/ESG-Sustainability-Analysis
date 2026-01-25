@@ -1,363 +1,405 @@
-import Sidebar from '@/components/Sidebar';
-import { useTopCompanies, useSectorAverages, useHighControversyCompanies, useModelInfo } from '@/hooks/useApi';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  FileText, 
-  BarChart3, 
-  PieChart, 
-  TrendingUp, 
-  Award, 
-  AlertTriangle,
+import { memo, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import {
+  FileText,
   Download,
+  BarChart3,
+  TrendingUp,
+  Calendar,
+  Filter,
   Eye,
-  Calendar
 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  Button,
+  Badge,
+  Skeleton,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from '@/components/ui';
+import { BarChart, LineChart, PieChart } from '@/components/charts';
+import { useApi } from '@/hooks';
+import { apiService } from '@/services/api';
+import { cn } from '@/lib/utils';
 
-const Reports = () => {
-  const { data: topCompanies, isLoading: companiesLoading } = useTopCompanies(10);
-  const { data: sectors, isLoading: sectorsLoading } = useSectorAverages();
-  const { data: controversies, isLoading: controversiesLoading } = useHighControversyCompanies(50);
-  const { data: modelInfo, isLoading: modelLoading } = useModelInfo();
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
 
-  const isLoading = companiesLoading || sectorsLoading || controversiesLoading || modelLoading;
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
 
-  const generateReport = (type: string) => {
-    // In a real implementation, this would generate and download a report
-    alert(`Generating ${type} report... (Demo)`);
+// Report types
+interface Report {
+  id: string;
+  title: string;
+  description: string;
+  type: 'sector' | 'company' | 'trend' | 'controversy';
+  date: string;
+  status: 'ready' | 'generating' | 'pending';
+}
+
+// Sample reports data
+const sampleReports: Report[] = [
+  {
+    id: '1',
+    title: 'Q4 2024 ESG Sector Analysis',
+    description: 'Comprehensive analysis of ESG performance across all sectors',
+    type: 'sector',
+    date: '2024-01-15',
+    status: 'ready',
+  },
+  {
+    id: '2',
+    title: 'Top 100 Companies ESG Ranking',
+    description: 'Ranking of top performing companies by ESG metrics',
+    type: 'company',
+    date: '2024-01-10',
+    status: 'ready',
+  },
+  {
+    id: '3',
+    title: 'ESG Risk Trends 2023-2024',
+    description: 'Year-over-year analysis of ESG risk trends',
+    type: 'trend',
+    date: '2024-01-08',
+    status: 'ready',
+  },
+  {
+    id: '4',
+    title: 'Controversy Impact Report',
+    description: 'Analysis of ESG controversies and their market impact',
+    type: 'controversy',
+    date: '2024-01-05',
+    status: 'ready',
+  },
+  {
+    id: '5',
+    title: 'January 2024 Monthly Report',
+    description: 'Monthly summary of ESG developments and metrics',
+    type: 'trend',
+    date: '2024-01-20',
+    status: 'generating',
+  },
+];
+
+// Report Card - Isolated component
+const ReportCard = memo(function ReportCard({ report }: { report: Report }) {
+  const getTypeIcon = () => {
+    switch (report.type) {
+      case 'sector':
+        return <BarChart3 className="h-5 w-5" />;
+      case 'company':
+        return <FileText className="h-5 w-5" />;
+      case 'trend':
+        return <TrendingUp className="h-5 w-5" />;
+      case 'controversy':
+        return <Filter className="h-5 w-5" />;
+      default:
+        return <FileText className="h-5 w-5" />;
+    }
   };
 
-  const getRiskColor = (risk: string) => {
-    const lowerRisk = risk?.toLowerCase() || '';
-    if (lowerRisk.includes('high')) return 'text-red-600 bg-red-50';
-    if (lowerRisk.includes('moderate')) return 'text-orange-600 bg-orange-50';
-    return 'text-green-600 bg-green-50';
-  };
-
-  const calculatePortfolioScore = () => {
-    if (!topCompanies || topCompanies.length === 0) return 0;
-    const avgScore = topCompanies.reduce((sum, c) => sum + c.total_esg_risk_score, 0) / topCompanies.length;
-    return 100 - avgScore; // Convert risk score to performance score
+  const getTypeBadgeColor = () => {
+    switch (report.type) {
+      case 'sector':
+        return 'bg-blue-500';
+      case 'company':
+        return 'bg-green-500';
+      case 'trend':
+        return 'bg-purple-500';
+      case 'controversy':
+        return 'bg-orange-500';
+      default:
+        return 'bg-gray-500';
+    }
   };
 
   return (
-    <div className="min-h-screen flex">
-      <Sidebar />
-      <main className="flex-1 ml-16 lg:ml-72 transition-all duration-300">
-        <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gradient-primary mb-2">
-              ESG Reports & Analytics
-            </h1>
-            <p className="text-lg text-foreground-secondary">
-              Comprehensive ESG performance insights and downloadable reports
-            </p>
-          </div>
-
-          {/* Report Generation */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Generate Reports
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button 
-                  onClick={() => generateReport('Portfolio Summary')}
-                  className="flex items-center gap-2 h-auto p-4"
-                >
-                  <Download className="h-4 w-4" />
-                  <div className="text-left">
-                    <div className="font-medium">Portfolio Summary</div>
-                    <div className="text-xs opacity-75">Top companies & risk analysis</div>
-                  </div>
-                </Button>
-                
-                <Button 
-                  onClick={() => generateReport('Sector Analysis')}
-                  variant="outline"
-                  className="flex items-center gap-2 h-auto p-4"
-                >
-                  <PieChart className="h-4 w-4" />
-                  <div className="text-left">
-                    <div className="font-medium">Sector Analysis</div>
-                    <div className="text-xs opacity-75">Industry risk breakdown</div>
-                  </div>
-                </Button>
-                
-                <Button 
-                  onClick={() => generateReport('Controversy Watch')}
-                  variant="outline"
-                  className="flex items-center gap-2 h-auto p-4"
-                >
-                  <AlertTriangle className="h-4 w-4" />
-                  <div className="text-left">
-                    <div className="font-medium">Controversy Watch</div>
-                    <div className="text-xs opacity-75">High-risk companies</div>
-                  </div>
-                </Button>
+    <Card className="hover:shadow-md transition-shadow">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              {getTypeIcon()}
+            </div>
+            <div>
+              <CardTitle className="text-base">{report.title}</CardTitle>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge className={cn('text-xs', getTypeBadgeColor())}>
+                  {report.type}
+                </Badge>
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {new Date(report.date).toLocaleDateString()}
+                </span>
               </div>
+            </div>
+          </div>
+          {report.status === 'ready' ? (
+            <Badge variant="outline" className="text-green-500 border-green-500">
+              Ready
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="text-yellow-500 border-yellow-500">
+              {report.status}
+            </Badge>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground">{report.description}</p>
+      </CardContent>
+      <CardFooter className="flex gap-2">
+        <Button variant="outline" size="sm" disabled={report.status !== 'ready'}>
+          <Eye className="h-4 w-4 mr-1" />
+          View
+        </Button>
+        <Button variant="outline" size="sm" disabled={report.status !== 'ready'}>
+          <Download className="h-4 w-4 mr-1" />
+          Download
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+});
+
+// Analytics Summary Card
+const AnalyticsSummary = memo(function AnalyticsSummary({
+  isLoading,
+}: {
+  isLoading: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i}>
+            <CardContent className="pt-6">
+              <Skeleton className="h-4 w-24 mb-2" />
+              <Skeleton className="h-8 w-16" />
             </CardContent>
           </Card>
+        ))}
+      </div>
+    );
+  }
 
-          {/* Key Metrics Dashboard */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Portfolio Score</CardTitle>
-                <Award className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">
-                  {isLoading ? <Skeleton className="h-6 w-16" /> : `${calculatePortfolioScore().toFixed(1)}`}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  ESG Performance Index
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Companies Tracked</CardTitle>
-                <Eye className="h-4 w-4 text-blue-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-blue-600">
-                  {isLoading ? <Skeleton className="h-6 w-16" /> : topCompanies?.length || 0}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Top performers
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Sectors Analyzed</CardTitle>
-                <BarChart3 className="h-4 w-4 text-purple-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-purple-600">
-                  {isLoading ? <Skeleton className="h-6 w-16" /> : sectors?.length || 0}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Industry coverage
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">High Risk</CardTitle>
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-red-600">
-                  {isLoading ? <Skeleton className="h-6 w-16" /> : controversies?.length || 0}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Controversy alerts
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Top Performers Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5 text-green-600" />
-                  Top ESG Performers
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="space-y-3">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={i} className="flex items-center justify-between">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-4 w-16" />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {(topCompanies || []).slice(0, 5).map((company, index) => (
-                      <div key={company.symbol} className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Badge variant="outline" className="w-8 h-6 flex items-center justify-center text-xs">
-                            #{index + 1}
-                          </Badge>
-                          <span className="font-medium">{company.name}</span>
-                        </div>
-                        <Badge variant="outline" className="bg-green-50 text-green-700">
-                          {company.total_esg_risk_score.toFixed(1)}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Sector Risk Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-purple-600" />
-                  Sector Risk Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="space-y-4">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={i}>
-                        <div className="flex justify-between mb-2">
-                          <Skeleton className="h-4 w-24" />
-                          <Skeleton className="h-4 w-12" />
-                        </div>
-                        <Skeleton className="h-2 w-full" />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {(sectors || []).slice(0, 5).map((sector) => {
-                      const riskPercentage = Math.min(sector.avg_esg_score, 100);
-                      return (
-                        <div key={sector.sector}>
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium">{sector.sector}</span>
-                            <Badge variant="outline" className="bg-orange-50 text-orange-700">
-                              {sector.avg_esg_score.toFixed(1)}
-                            </Badge>
-                          </div>
-                          <Progress value={riskPercentage} className="h-2" />
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Model Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-blue-600" />
-                  AI Model Performance
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {modelLoading ? (
-                  <div className="space-y-3">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-4 w-24" />
-                  </div>
-                ) : modelInfo ? (
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Model Version</span>
-                      <span className="font-medium">v{modelInfo.version}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Features</span>
-                      <span className="font-medium">{modelInfo.features.length}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Model Status</span>
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                        Active
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Runtime</span>
-                      <span className="font-mono text-sm">{modelInfo.sklearn_version_runtime}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <Alert>
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>Model information unavailable</AlertDescription>
-                  </Alert>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-gray-600" />
-                  Analysis Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-100 rounded-full">
-                        <Award className="h-4 w-4 text-green-600" />
-                      </div>
-                      <div>
-                        <div className="font-medium">Top Companies Analysis</div>
-                        <div className="text-xs text-muted-foreground">Latest ESG leaders</div>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="bg-green-50 text-green-700">
-                      Complete
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-100 rounded-full">
-                        <BarChart3 className="h-4 w-4 text-purple-600" />
-                      </div>
-                      <div>
-                        <div className="font-medium">Sector Risk Assessment</div>
-                        <div className="text-xs text-muted-foreground">Industry risk mapping</div>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="bg-purple-50 text-purple-700">
-                      Complete
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-red-100 rounded-full">
-                        <AlertTriangle className="h-4 w-4 text-red-600" />
-                      </div>
-                      <div>
-                        <div className="font-medium">Controversy Monitoring</div>
-                        <div className="text-xs text-muted-foreground">High-risk alerts</div>
-                      </div>
-                    </div>
-                    <Badge variant="outline" className="bg-red-50 text-red-700">
-                      Active
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </main>
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-sm text-muted-foreground">Total Reports</p>
+          <p className="text-2xl font-bold">{sampleReports.length}</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-sm text-muted-foreground">Ready to Download</p>
+          <p className="text-2xl font-bold text-green-500">
+            {sampleReports.filter((r) => r.status === 'ready').length}
+          </p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-sm text-muted-foreground">In Progress</p>
+          <p className="text-2xl font-bold text-yellow-500">
+            {sampleReports.filter((r) => r.status !== 'ready').length}
+          </p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-sm text-muted-foreground">Last Updated</p>
+          <p className="text-lg font-bold">Today</p>
+        </CardContent>
+      </Card>
     </div>
   );
-};
+});
 
-export default Reports;
+// Main Reports Page
+function Reports() {
+  const [activeTab, setActiveTab] = useState('reports');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+
+  // Fetch sector data for analytics
+  const { data: sectorData, isLoading } = useApi(
+    'reports-sector-data',
+    () => apiService.getSectorAverages(),
+    { cacheTime: 10 * 60 * 1000 }
+  );
+
+  // Filter reports
+  const filteredReports = useMemo(() => {
+    if (typeFilter === 'all') return sampleReports;
+    return sampleReports.filter((r) => r.type === typeFilter);
+  }, [typeFilter]);
+
+  // Chart data
+  const trendData = useMemo(
+    () => [
+      { month: 'Jul', environment: 22, social: 18, governance: 15 },
+      { month: 'Aug', environment: 20, social: 19, governance: 14 },
+      { month: 'Sep', environment: 19, social: 17, governance: 13 },
+      { month: 'Oct', environment: 18, social: 16, governance: 12 },
+      { month: 'Nov', environment: 17, social: 15, governance: 11 },
+      { month: 'Dec', environment: 16, social: 14, governance: 10 },
+    ],
+    []
+  );
+
+  const riskDistribution = useMemo(
+    () => [
+      { name: 'Low Risk', value: 35, color: '#10b981' },
+      { name: 'Medium Risk', value: 40, color: '#eab308' },
+      { name: 'High Risk', value: 18, color: '#f97316' },
+      { name: 'Severe Risk', value: 7, color: '#ef4444' },
+    ],
+    []
+  );
+
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
+      {/* Header */}
+      <motion.div variants={itemVariants}>
+        <h1 className="text-3xl font-bold mb-2">Reports & Analytics</h1>
+        <p className="text-muted-foreground">
+          Access comprehensive ESG reports and analytics dashboards.
+        </p>
+      </motion.div>
+
+      {/* Summary */}
+      <motion.div variants={itemVariants}>
+        <AnalyticsSummary isLoading={isLoading} />
+      </motion.div>
+
+      {/* Tabs */}
+      <motion.div variants={itemVariants}>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="reports">Reports</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="reports" className="mt-6 space-y-4">
+            {/* Filter */}
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold">Available Reports</h2>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="sector">Sector</SelectItem>
+                  <SelectItem value="company">Company</SelectItem>
+                  <SelectItem value="trend">Trend</SelectItem>
+                  <SelectItem value="controversy">Controversy</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Reports Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {filteredReports.map((report) => (
+                <ReportCard key={report.id} report={report} />
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="mt-6 space-y-6">
+            {/* Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <LineChart
+                data={trendData}
+                lines={[
+                  { key: 'environment', name: 'Environment', color: '#10b981' },
+                  { key: 'social', name: 'Social', color: '#3b82f6' },
+                  { key: 'governance', name: 'Governance', color: '#8b5cf6' },
+                ]}
+                xAxisKey="month"
+                title="ESG Score Trends (6 Months)"
+                description="Monthly average risk scores by category"
+                height={300}
+              />
+              <PieChart
+                data={riskDistribution}
+                title="Portfolio Risk Distribution"
+                description="Current distribution of risk levels"
+                height={300}
+                innerRadius={60}
+                outerRadius={100}
+              />
+            </div>
+
+            {/* Additional Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Key Insights</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 rounded-lg bg-green-500/10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="h-5 w-5 text-green-500" />
+                      <span className="font-medium">Improving</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Overall ESG scores improved by 12% compared to last quarter.
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-blue-500/10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <BarChart3 className="h-5 w-5 text-blue-500" />
+                      <span className="font-medium">Top Performer</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Technology sector leads with lowest average risk score.
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-orange-500/10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Filter className="h-5 w-5 text-orange-500" />
+                      <span className="font-medium">Watch List</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      25 companies flagged for increased controversy levels.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+export default memo(Reports);

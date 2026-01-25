@@ -1,92 +1,254 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiService, ESGPredictionRequest } from '@/lib/api';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
-// Query keys
-export const queryKeys = {
-  health: ['health'] as const,
-  companies: (limit?: number) => ['companies', limit] as const,
-  sectors: ['sectors'] as const,
-  controversies: (minScore?: number) => ['controversies', minScore] as const,
-  modelInfo: ['modelInfo'] as const,
-  featureImportances: ['featureImportances'] as const,
-};
+interface UseApiOptions<T> {
+  initialData?: T;
+  enabled?: boolean;
+  onSuccess?: (data: T) => void;
+  onError?: (error: Error) => void;
+  refetchInterval?: number;
+  cacheTime?: number;
+}
 
-// Custom hooks
-export const useHealth = () => {
-  return useQuery({
-    queryKey: queryKeys.health,
-    queryFn: apiService.getHealth,
-    refetchInterval: 30000, // Refetch every 30 seconds
+interface UseApiState<T> {
+  data: T | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  error: Error | null;
+  isSuccess: boolean;
+  isFetching: boolean;
+}
+
+interface UseApiActions {
+  refetch: () => Promise<void>;
+  reset: () => void;
+}
+
+// Simple in-memory cache
+const cache = new Map<string, { data: unknown; timestamp: number }>();
+
+export function useApi<T>(
+  key: string,
+  fetcher: () => Promise<T>,
+  options: UseApiOptions<T> = {}
+): UseApiState<T> & UseApiActions {
+  const {
+    initialData,
+    enabled = true,
+    onSuccess,
+    onError,
+    refetchInterval,
+    cacheTime = 5 * 60 * 1000, // 5 minutes default
+  } = options;
+
+  const [state, setState] = useState<UseApiState<T>>({
+    data: initialData,
+    isLoading: enabled,
+    isError: false,
+    error: null,
+    isSuccess: false,
+    isFetching: false,
   });
-};
 
-export const useTopCompanies = (limit: number = 10) => {
-  return useQuery({
-    queryKey: queryKeys.companies(limit),
-    queryFn: () => apiService.getTopCompanies(limit),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+  const mountedRef = useRef(true);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchData = useCallback(async () => {
+    // Check cache first
+    const cached = cache.get(key);
+    if (cached && Date.now() - cached.timestamp < cacheTime) {
+      setState((prev) => ({
+        ...prev,
+        data: cached.data as T,
+        isLoading: false,
+        isSuccess: true,
+        isFetching: false,
+      }));
+      return;
+    }
+
+    setState((prev) => ({ ...prev, isFetching: true, isError: false, error: null }));
+
+    try {
+      const data = await fetcher();
+
+      if (!mountedRef.current) return;
+
+      // Update cache
+      cache.set(key, { data, timestamp: Date.now() });
+
+      setState({
+        data,
+        isLoading: false,
+        isError: false,
+        error: null,
+        isSuccess: true,
+        isFetching: false,
+      });
+
+      onSuccess?.(data);
+    } catch (err) {
+      if (!mountedRef.current) return;
+
+      const error = err instanceof Error ? err : new Error(String(err));
+
+      setState({
+        data: initialData,
+        isLoading: false,
+        isError: true,
+        error,
+        isSuccess: false,
+        isFetching: false,
+      });
+
+      onError?.(error);
+    }
+  }, [key, fetcher, cacheTime, initialData, onSuccess, onError]);
+
+  const reset = useCallback(() => {
+    cache.delete(key);
+    setState({
+      data: initialData,
+      isLoading: false,
+      isError: false,
+      error: null,
+      isSuccess: false,
+      isFetching: false,
+    });
+  }, [key, initialData]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    if (enabled) {
+      fetchData();
+    }
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, [enabled, fetchData]);
+
+  // Refetch interval
+  useEffect(() => {
+    if (refetchInterval && enabled) {
+      intervalRef.current = setInterval(fetchData, refetchInterval);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [refetchInterval, enabled, fetchData]);
+
+  return {
+    ...state,
+    refetch: fetchData,
+    reset,
+  };
+}
+
+// Hook for mutations (POST, PUT, DELETE)
+interface UseMutationOptions<TData, TVariables> {
+  onSuccess?: (data: TData, variables: TVariables) => void;
+  onError?: (error: Error, variables: TVariables) => void;
+  onSettled?: (data: TData | undefined, error: Error | null, variables: TVariables) => void;
+}
+
+interface UseMutationState<TData> {
+  data: TData | undefined;
+  isLoading: boolean;
+  isError: boolean;
+  error: Error | null;
+  isSuccess: boolean;
+}
+
+export function useMutation<TData, TVariables>(
+  mutationFn: (variables: TVariables) => Promise<TData>,
+  options: UseMutationOptions<TData, TVariables> = {}
+) {
+  const { onSuccess, onError, onSettled } = options;
+
+  const [state, setState] = useState<UseMutationState<TData>>({
+    data: undefined,
+    isLoading: false,
+    isError: false,
+    error: null,
+    isSuccess: false,
   });
-};
 
-export const useSectorAverages = () => {
-  return useQuery({
-    queryKey: queryKeys.sectors,
-    queryFn: apiService.getSectorAverages,
-    staleTime: 5 * 60 * 1000,
-  });
-};
+  const mountedRef = useRef(true);
 
-export const useHighControversyCompanies = (minScore: number = 50) => {
-  return useQuery({
-    queryKey: queryKeys.controversies(minScore),
-    queryFn: () => apiService.getHighControversyCompanies(minScore),
-    staleTime: 5 * 60 * 1000,
-  });
-};
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
-export const useModelInfo = () => {
-  return useQuery({
-    queryKey: queryKeys.modelInfo,
-    queryFn: apiService.getModelInfo,
-    staleTime: 10 * 60 * 1000, // 10 minutes
-  });
-};
+  const mutate = useCallback(
+    async (variables: TVariables) => {
+      setState({
+        data: undefined,
+        isLoading: true,
+        isError: false,
+        error: null,
+        isSuccess: false,
+      });
 
-export const useFeatureImportances = () => {
-  return useQuery({
-    queryKey: queryKeys.featureImportances,
-    queryFn: apiService.getFeatureImportances,
-    staleTime: 10 * 60 * 1000,
-  });
-};
+      try {
+        const data = await mutationFn(variables);
 
-export const useESGPrediction = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (data: ESGPredictionRequest) => apiService.predictESGRisk(data),
-    onSuccess: () => {
-      // Invalidate related queries if needed
+        if (!mountedRef.current) return;
+
+        setState({
+          data,
+          isLoading: false,
+          isError: false,
+          error: null,
+          isSuccess: true,
+        });
+
+        onSuccess?.(data, variables);
+        onSettled?.(data, null, variables);
+
+        return data;
+      } catch (err) {
+        if (!mountedRef.current) return;
+
+        const error = err instanceof Error ? err : new Error(String(err));
+
+        setState({
+          data: undefined,
+          isLoading: false,
+          isError: true,
+          error,
+          isSuccess: false,
+        });
+
+        onError?.(error, variables);
+        onSettled?.(undefined, error, variables);
+
+        throw error;
+      }
     },
-  });
-};
+    [mutationFn, onSuccess, onError, onSettled]
+  );
 
-export const useBatchESGPrediction = () => {
-  return useMutation({
-    mutationFn: (items: ESGPredictionRequest[]) => apiService.predictESGRiskBatch(items),
-  });
-};
+  const reset = useCallback(() => {
+    setState({
+      data: undefined,
+      isLoading: false,
+      isError: false,
+      error: null,
+      isSuccess: false,
+    });
+  }, []);
 
-export const useReloadModel = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: apiService.reloadModel,
-    onSuccess: () => {
-      // Invalidate all model-related queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.modelInfo });
-      queryClient.invalidateQueries({ queryKey: queryKeys.featureImportances });
-      queryClient.invalidateQueries({ queryKey: queryKeys.health });
-    },
-  });
-};
+  return {
+    ...state,
+    mutate,
+    mutateAsync: mutate,
+    reset,
+  };
+}

@@ -1,145 +1,210 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { 
-  Building2, 
-  BarChart3, 
-  AlertTriangle, 
-  Brain, 
-  FileText, 
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  LayoutDashboard,
+  Building2,
+  PieChart,
+  AlertTriangle,
+  Brain,
+  FileText,
   Info,
   Menu,
-  X
+  X,
+  Leaf,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui';
+import { useIsMobile } from '@/hooks';
 
-const Navigation = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+interface NavItem {
+  label: string;
+  path: string;
+  icon: React.ReactNode;
+}
+
+const navItems: NavItem[] = [
+  { label: 'Dashboard', path: '/', icon: <LayoutDashboard className="h-4 w-4" /> },
+  { label: 'Companies', path: '/companies', icon: <Building2 className="h-4 w-4" /> },
+  { label: 'Sectors', path: '/sectors', icon: <PieChart className="h-4 w-4" /> },
+  { label: 'Controversies', path: '/controversies', icon: <AlertTriangle className="h-4 w-4" /> },
+  { label: 'Predictor', path: '/predictor', icon: <Brain className="h-4 w-4" /> },
+  { label: 'Reports', path: '/reports', icon: <FileText className="h-4 w-4" /> },
+  { label: 'About', path: '/about', icon: <Info className="h-4 w-4" /> },
+];
+
+// Desktop Navigation Link - Memoized to prevent unnecessary re-renders
+const NavLink = memo(function NavLink({
+  item,
+  isActive,
+}: {
+  item: NavItem;
+  isActive: boolean;
+}) {
+  return (
+    <Link
+      to={item.path}
+      className={cn(
+        'relative flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors',
+        'hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        isActive ? 'text-primary' : 'text-muted-foreground'
+      )}
+    >
+      {item.icon}
+      {item.label}
+      {isActive && (
+        <motion.div
+          layoutId="navbar-indicator"
+          className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+          initial={false}
+          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+        />
+      )}
+    </Link>
+  );
+});
+
+// Mobile Navigation Link - Memoized
+const MobileNavLink = memo(function MobileNavLink({
+  item,
+  isActive,
+  onClick,
+}: {
+  item: NavItem;
+  isActive: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Link
+      to={item.path}
+      onClick={onClick}
+      className={cn(
+        'flex items-center gap-3 px-4 py-3 text-base font-medium transition-colors',
+        'hover:bg-accent hover:text-accent-foreground rounded-lg',
+        isActive ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
+      )}
+    >
+      {item.icon}
+      {item.label}
+    </Link>
+  );
+});
+
+// Mobile Menu Overlay
+const MobileMenu = memo(function MobileMenu({
+  isOpen,
+  onClose,
+  currentPath,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  currentPath: string;
+}) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
+          />
+          {/* Menu Panel */}
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="fixed top-0 right-0 bottom-0 z-50 w-72 bg-background border-l shadow-xl md:hidden"
+          >
+            <div className="flex items-center justify-between p-4 border-b">
+              <span className="font-semibold text-lg">Navigation</span>
+              <Button variant="ghost" size="icon" onClick={onClose}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <nav className="flex flex-col gap-1 p-4">
+              {navItems.map((item) => (
+                <MobileNavLink
+                  key={item.path}
+                  item={item}
+                  isActive={currentPath === item.path}
+                  onClick={onClose}
+                />
+              ))}
+            </nav>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+});
+
+// Main Navigation Component
+function Navigation() {
   const location = useLocation();
+  const isMobile = useIsMobile();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navItems = [
-    { name: 'Home', href: '/', icon: Building2 },
-    { name: 'Company Explorer', href: '/companies', icon: Building2 },
-    { name: 'Sector Insights', href: '/sectors', icon: BarChart3 },
-    { name: 'Controversy Watch', href: '/controversies', icon: AlertTriangle },
-    { name: 'ESG Predictor', href: '/predictor', icon: Brain },
-    { name: 'Reports', href: '/reports', icon: FileText },
-    { name: 'About', href: '/about', icon: Info },
-  ];
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+  const toggleMobileMenu = useCallback(() => {
+    setMobileMenuOpen((prev) => !prev);
   }, []);
 
-  const isActive = (href: string) => location.pathname === href;
+  const closeMobileMenu = useCallback(() => {
+    setMobileMenuOpen(false);
+  }, []);
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-smooth ${
-      isScrolled ? 'glass-nav py-2' : 'bg-transparent py-4'
-    }`}>
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between">
+    <header className="sticky top-0 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3 hover-lift">
-            <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center">
-              <Building2 className="w-6 h-6 text-primary-foreground" />
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary text-primary-foreground">
+              <Leaf className="h-5 w-5" />
             </div>
-            <div className="hidden sm:block">
-              <h1 className="text-xl font-bold text-gradient-primary">
-                ESG Analytics
-              </h1>
-              <p className="text-xs text-foreground-secondary">
-                Risk Intelligence
-              </p>
-            </div>
+            <span className="font-bold text-lg hidden sm:inline-block group-hover:text-primary transition-colors">
+              ESG Analytics
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-smooth hover-lift ${
-                    isActive(item.href)
-                      ? 'bg-primary/20 text-primary border border-primary/30'
-                      : 'text-foreground-secondary hover:text-foreground hover:bg-glass-bg/50'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{item.name}</span>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* CTA Button */}
-          <div className="hidden lg:block">
-            <Button
-              variant="default"
-              className="bg-gradient-accent hover:shadow-glow-accent transition-all duration-smooth"
-            >
-              Get Started
-            </Button>
-          </div>
+          <nav className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.path}
+                item={item}
+                isActive={location.pathname === item.path}
+              />
+            ))}
+          </nav>
 
           {/* Mobile Menu Button */}
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
-            onClick={() => setIsMobileOpen(!isMobileOpen)}
+            className="md:hidden"
+            onClick={toggleMobileMenu}
+            aria-label="Toggle menu"
           >
-            {isMobileOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
+            <Menu className="h-5 w-5" />
           </Button>
         </div>
-
-        {/* Mobile Navigation */}
-        {isMobileOpen && (
-          <div className="lg:hidden mt-4 glass-card p-4 animate-slide-up">
-            <div className="space-y-2">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={() => setIsMobileOpen(false)}
-                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-smooth ${
-                      isActive(item.href)
-                        ? 'bg-primary/20 text-primary border border-primary/30'
-                        : 'text-foreground-secondary hover:text-foreground hover:bg-glass-bg/50'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{item.name}</span>
-                  </Link>
-                );
-              })}
-              <div className="pt-4 border-t border-glass-border">
-                <Button
-                  variant="default"
-                  className="w-full bg-gradient-accent hover:shadow-glow-accent"
-                >
-                  Get Started
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
-    </nav>
-  );
-};
 
-export default Navigation;
+      {/* Mobile Menu */}
+      {isMobile && (
+        <MobileMenu
+          isOpen={mobileMenuOpen}
+          onClose={closeMobileMenu}
+          currentPath={location.pathname}
+        />
+      )}
+    </header>
+  );
+}
+
+export default memo(Navigation);

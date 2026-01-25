@@ -1,195 +1,455 @@
-import Sidebar from '@/components/Sidebar';
-import { useTopCompanies } from '@/hooks/useApi';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, TrendingUp, Building2 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { memo, useState, useCallback, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { Search, Filter, Building2, ChevronDown, ExternalLink } from 'lucide-react';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  Input,
+  Badge,
+  Skeleton,
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui';
+import { RadarChart } from '@/components/charts';
+import { useApi, useDebounce, usePagination } from '@/hooks';
+import { apiService } from '@/services/api';
+import { cn, getRiskColor } from '@/lib/utils';
 
-const Companies = () => {
-  const [limit, setLimit] = useState(10);
-  const { data: companies, isLoading, error, refetch } = useTopCompanies(limit);
-
-  const getRiskBadgeVariant = (score: number) => {
-    if (score < 20) return 'default'; // Low risk - green
-    if (score < 40) return 'secondary'; // Medium risk - yellow
-    return 'destructive'; // High risk - red
-  };
-
-  const getRiskLabel = (score: number) => {
-    if (score < 20) return 'Low Risk';
-    if (score < 40) return 'Medium Risk';
-    return 'High Risk';
-  };
-
-  return (
-    <div className="min-h-screen flex">
-      <Sidebar />
-      <main className="flex-1 ml-16 lg:ml-72 transition-all duration-300">
-        <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-4xl font-bold text-gradient-primary mb-2">
-                Company Explorer
-              </h1>
-              <p className="text-lg text-foreground-secondary">
-                Top companies with lowest ESG risk scores
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant={limit === 10 ? 'default' : 'outline'}
-                onClick={() => setLimit(10)}
-                size="sm"
-              >
-                Top 10
-              </Button>
-              <Button
-                variant={limit === 25 ? 'default' : 'outline'}
-                onClick={() => setLimit(25)}
-                size="sm"
-              >
-                Top 25
-              </Button>
-              <Button
-                variant={limit === 50 ? 'default' : 'outline'}
-                onClick={() => setLimit(50)}
-                size="sm"
-              >
-                Top 50
-              </Button>
-            </div>
-          </div>
-
-          {/* Error Alert */}
-          {error && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Failed to load companies: {error.message}
-                <Button variant="outline" size="sm" onClick={() => refetch()} className="ml-2">
-                  Retry
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Companies</CardTitle>
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {isLoading ? <Skeleton className="h-6 w-16" /> : companies?.length || 0}
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Best ESG Score</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {isLoading ? (
-                    <Skeleton className="h-6 w-16" />
-                  ) : companies && companies.length > 0 ? (
-                    companies[0].total_esg_risk_score.toFixed(1)
-                  ) : (
-                    'N/A'
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Average Score</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {isLoading ? (
-                    <Skeleton className="h-6 w-16" />
-                  ) : companies && companies.length > 0 ? (
-                    (companies.reduce((sum, c) => sum + c.total_esg_risk_score, 0) / companies.length).toFixed(1)
-                  ) : (
-                    'N/A'
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Companies Grid */}
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: limit }).map((_, i) => (
-                <Card key={i}>
-                  <CardHeader>
-                    <Skeleton className="h-4 w-16 mb-2" />
-                    <Skeleton className="h-6 w-full" />
-                  </CardHeader>
-                  <CardContent>
-                    <Skeleton className="h-4 w-24 mb-2" />
-                    <Skeleton className="h-8 w-20" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : companies && companies.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {companies.map((company, index) => (
-                <Card key={company.symbol} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant="outline" className="text-xs">
-                        #{index + 1}
-                      </Badge>
-                      <Badge variant={getRiskBadgeVariant(company.total_esg_risk_score)}>
-                        {getRiskLabel(company.total_esg_risk_score)}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-lg leading-tight">{company.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{company.symbol}</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">Sector</span>
-                        <span className="text-sm font-medium">{company.sector}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground">ESG Risk Score</span>
-                        <span className="text-lg font-bold">{company.total_esg_risk_score.toFixed(1)}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Building2 className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-medium mb-2">No Companies Found</h3>
-                <p className="text-muted-foreground">
-                  No company data is available at the moment.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </main>
-    </div>
-  );
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 },
+  },
 };
 
-export default Companies;
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+};
+
+// Types
+interface Company {
+  name: string;
+  symbol: string;
+  sector: string;
+  industry: string;
+  country: string;
+  total_esg_risk_score: number;
+  environment_risk_score: number;
+  social_risk_score: number;
+  governance_risk_score: number;
+  esg_risk_rating: string;
+  controversy_level: number;
+}
+
+// Company Row - Isolated component
+const CompanyRow = memo(function CompanyRow({
+  company,
+  onSelect,
+}: {
+  company: Company;
+  onSelect: (company: Company) => void;
+}) {
+  const riskColor = getRiskColor(company.esg_risk_rating);
+
+  return (
+    <TableRow
+      className="cursor-pointer hover:bg-muted/50"
+      onClick={() => onSelect(company)}
+    >
+      <TableCell>
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+            <Building2 className="h-4 w-4 text-primary" />
+          </div>
+          <div>
+            <p className="font-medium">{company.name}</p>
+            <p className="text-xs text-muted-foreground">{company.symbol}</p>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="hidden md:table-cell">
+        <span className="text-sm">{company.sector}</span>
+      </TableCell>
+      <TableCell className="hidden lg:table-cell">
+        <span className="text-sm text-muted-foreground">{company.country}</span>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-col items-center">
+          <span className="font-semibold">{company.total_esg_risk_score.toFixed(1)}</span>
+          <Badge
+            variant="outline"
+            className="text-xs mt-1"
+            style={{ borderColor: riskColor, color: riskColor }}
+          >
+            {company.esg_risk_rating}
+          </Badge>
+        </div>
+      </TableCell>
+      <TableCell className="hidden sm:table-cell">
+        <div className="flex gap-1 justify-center">
+          <div
+            className="h-2 rounded-full"
+            style={{
+              width: `${Math.min(company.environment_risk_score, 40)}px`,
+              backgroundColor: '#10b981',
+            }}
+          />
+          <div
+            className="h-2 rounded-full"
+            style={{
+              width: `${Math.min(company.social_risk_score, 40)}px`,
+              backgroundColor: '#3b82f6',
+            }}
+          />
+          <div
+            className="h-2 rounded-full"
+            style={{
+              width: `${Math.min(company.governance_risk_score, 40)}px`,
+              backgroundColor: '#8b5cf6',
+            }}
+          />
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+});
+
+// Company Detail Modal - Isolated component
+const CompanyDetailModal = memo(function CompanyDetailModal({
+  company,
+  isOpen,
+  onClose,
+}: {
+  company: Company | null;
+  isOpen: boolean;
+  onClose: () => void;
+}) {
+  if (!company) return null;
+
+  const radarData = [
+    { metric: 'Environment', value: company.environment_risk_score },
+    { metric: 'Social', value: company.social_risk_score },
+    { metric: 'Governance', value: company.governance_risk_score },
+  ];
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Building2 className="h-5 w-5" />
+            {company.name}
+          </DialogTitle>
+          <DialogDescription>{company.sector} • {company.industry}</DialogDescription>
+        </DialogHeader>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+          {/* Company Info */}
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-sm font-medium mb-2">Company Details</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Symbol</span>
+                  <span className="font-medium">{company.symbol}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Country</span>
+                  <span className="font-medium">{company.country}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Industry</span>
+                  <span className="font-medium">{company.industry}</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium mb-2">ESG Scores</h4>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-green-500" />
+                    Environment
+                  </span>
+                  <span className="font-semibold">{company.environment_risk_score.toFixed(1)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-500" />
+                    Social
+                  </span>
+                  <span className="font-semibold">{company.social_risk_score.toFixed(1)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-purple-500" />
+                    Governance
+                  </span>
+                  <span className="font-semibold">{company.governance_risk_score.toFixed(1)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+              <span className="text-sm">Overall ESG Risk</span>
+              <Badge
+                variant="outline"
+                className="text-lg font-bold px-3"
+                style={{
+                  borderColor: getRiskColor(company.esg_risk_rating),
+                  color: getRiskColor(company.esg_risk_rating),
+                }}
+              >
+                {company.total_esg_risk_score.toFixed(1)}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Radar Chart */}
+          <div>
+            <RadarChart
+              data={radarData}
+              radars={[{ key: 'value', name: 'Score', color: '#0ea5e9' }]}
+              angleKey="metric"
+              height={250}
+              showLegend={false}
+            />
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+});
+
+// Loading Skeleton
+const LoadingSkeleton = memo(function LoadingSkeleton() {
+  return (
+    <div className="space-y-4">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="flex items-center gap-4 p-4">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="flex-1">
+            <Skeleton className="h-4 w-48 mb-2" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+          <Skeleton className="h-8 w-16" />
+        </div>
+      ))}
+    </div>
+  );
+});
+
+// Main Companies Page
+function Companies() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSector, setSelectedSector] = useState<string>('all');
+  const [selectedRating, setSelectedRating] = useState<string>('all');
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const debouncedSearch = useDebounce(searchQuery, 300);
+
+  // Fetch companies
+  const { data: companies, isLoading } = useApi<Company[]>(
+    `companies-${debouncedSearch}-${selectedSector}-${selectedRating}`,
+    () => apiService.searchCompanies(debouncedSearch || undefined),
+    { cacheTime: 5 * 60 * 1000 }
+  );
+
+  // Get unique sectors
+  const sectors = useMemo(() => {
+    if (!companies) return [];
+    const uniqueSectors = [...new Set(companies.map((c) => c.sector))];
+    return uniqueSectors.sort();
+  }, [companies]);
+
+  // Filter companies
+  const filteredCompanies = useMemo(() => {
+    if (!companies) return [];
+    return companies.filter((company) => {
+      if (selectedSector !== 'all' && company.sector !== selectedSector) return false;
+      if (selectedRating !== 'all' && company.esg_risk_rating !== selectedRating) return false;
+      return true;
+    });
+  }, [companies, selectedSector, selectedRating]);
+
+  // Pagination
+  const pagination = usePagination({
+    totalItems: filteredCompanies.length,
+    initialPageSize: 10,
+  });
+
+  const paginatedCompanies = useMemo(() => {
+    const start = pagination.startIndex;
+    const end = start + pagination.pageSize;
+    return filteredCompanies.slice(start, end);
+  }, [filteredCompanies, pagination.startIndex, pagination.pageSize]);
+
+  const handleSelectCompany = useCallback((company: Company) => {
+    setSelectedCompany(company);
+    setIsModalOpen(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
+    setSelectedCompany(null);
+  }, []);
+
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
+      {/* Header */}
+      <motion.div variants={itemVariants}>
+        <h1 className="text-3xl font-bold mb-2">Companies</h1>
+        <p className="text-muted-foreground">
+          Explore ESG ratings and sustainability metrics for companies worldwide.
+        </p>
+      </motion.div>
+
+      {/* Filters */}
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Search */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search companies..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
+              {/* Sector Filter */}
+              <Select value={selectedSector} onValueChange={setSelectedSector}>
+                <SelectTrigger className="w-full md:w-48">
+                  <SelectValue placeholder="All Sectors" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sectors</SelectItem>
+                  {sectors.map((sector) => (
+                    <SelectItem key={sector} value={sector}>
+                      {sector}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Rating Filter */}
+              <Select value={selectedRating} onValueChange={setSelectedRating}>
+                <SelectTrigger className="w-full md:w-40">
+                  <SelectValue placeholder="All Ratings" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Ratings</SelectItem>
+                  <SelectItem value="Low">Low Risk</SelectItem>
+                  <SelectItem value="Medium">Medium Risk</SelectItem>
+                  <SelectItem value="High">High Risk</SelectItem>
+                  <SelectItem value="Severe">Severe Risk</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Results Summary */}
+      <motion.div variants={itemVariants} className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">
+          Showing {paginatedCompanies.length} of {filteredCompanies.length} companies
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={pagination.previousPage}
+            disabled={!pagination.hasPreviousPage}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Page {pagination.page} of {pagination.totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={pagination.nextPage}
+            disabled={!pagination.hasNextPage}
+          >
+            Next
+          </Button>
+        </div>
+      </motion.div>
+
+      {/* Companies Table */}
+      <motion.div variants={itemVariants}>
+        <Card>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <LoadingSkeleton />
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Company</TableHead>
+                    <TableHead className="hidden md:table-cell">Sector</TableHead>
+                    <TableHead className="hidden lg:table-cell">Country</TableHead>
+                    <TableHead className="text-center">ESG Score</TableHead>
+                    <TableHead className="hidden sm:table-cell text-center">
+                      E/S/G
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedCompanies.map((company, index) => (
+                    <CompanyRow
+                      key={`${company.symbol}-${index}`}
+                      company={company}
+                      onSelect={handleSelectCompany}
+                    />
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Company Detail Modal */}
+      <CompanyDetailModal
+        company={selectedCompany}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
+    </motion.div>
+  );
+}
+
+export default memo(Companies);

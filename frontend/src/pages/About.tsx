@@ -1,361 +1,323 @@
-import Sidebar from '@/components/Sidebar';
-import { useModelInfo } from '@/hooks/useApi';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { 
-  Brain, 
-  Database, 
-  Shield, 
-  TrendingUp, 
-  Users, 
-  Code, 
-  ExternalLink,
-  CheckCircle,
+import { memo } from 'react';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import {
+  Leaf,
   Target,
-  Zap
+  Users,
+  BarChart3,
+  Shield,
+  Lightbulb,
+  Github,
+  ExternalLink,
+  Mail,
+  Database,
+  Brain,
+  Code,
 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+  Button,
+} from '@/components/ui';
 
-const About = () => {
-  const { data: modelInfo, isLoading: modelLoading } = useModelInfo();
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
 
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
+
+// Feature Card
+interface FeatureProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  color: string;
+}
+
+const FeatureCard = memo(function FeatureCard({
+  icon,
+  title,
+  description,
+  color,
+}: FeatureProps) {
+  return (
+    <Card className="h-full">
+      <CardContent className="pt-6">
+        <div
+          className="h-12 w-12 rounded-lg flex items-center justify-center mb-4"
+          style={{ backgroundColor: `${color}20` }}
+        >
+          <div style={{ color }}>{icon}</div>
+        </div>
+        <h3 className="font-semibold mb-2">{title}</h3>
+        <p className="text-sm text-muted-foreground">{description}</p>
+      </CardContent>
+    </Card>
+  );
+});
+
+// Team Member Card
+interface TeamMemberProps {
+  name: string;
+  role: string;
+  avatar: string;
+}
+
+const TeamMember = memo(function TeamMember({
+  name,
+  role,
+  avatar,
+}: TeamMemberProps) {
+  return (
+    <div className="text-center">
+      <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary to-purple-500 mx-auto mb-3 flex items-center justify-center text-2xl font-bold text-white">
+        {avatar}
+      </div>
+      <h4 className="font-medium">{name}</h4>
+      <p className="text-sm text-muted-foreground">{role}</p>
+    </div>
+  );
+});
+
+// Tech Stack Item
+const TechItem = memo(function TechItem({
+  name,
+  icon,
+}: {
+  name: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted">
+      {icon}
+      <span className="text-sm font-medium">{name}</span>
+    </div>
+  );
+});
+
+// Main About Page
+function About() {
   const features = [
     {
-      icon: Brain,
-      title: "AI-Powered Analysis",
-      description: "Advanced machine learning models analyze ESG risk factors with high precision and reliability."
+      icon: <BarChart3 className="h-6 w-6" />,
+      title: 'Comprehensive Analytics',
+      description:
+        'Advanced ESG analytics covering environmental, social, and governance metrics across thousands of companies.',
+      color: '#3b82f6',
     },
     {
-      icon: Database,
-      title: "Comprehensive Data",
-      description: "Real-time ESG data covering environmental impact, social responsibility, and governance metrics."
+      icon: <Brain className="h-6 w-6" />,
+      title: 'AI-Powered Predictions',
+      description:
+        'Machine learning models trained on extensive ESG data to predict risk levels and identify trends.',
+      color: '#8b5cf6',
     },
     {
-      icon: Shield,
-      title: "Risk Assessment",
-      description: "Sophisticated risk scoring methodology to identify potential ESG-related business risks."
+      icon: <Shield className="h-6 w-6" />,
+      title: 'Risk Assessment',
+      description:
+        'Evaluate company and portfolio ESG risks with detailed breakdowns and controversy tracking.',
+      color: '#f97316',
     },
     {
-      icon: TrendingUp,
-      title: "Predictive Insights",
-      description: "Forward-looking analytics to anticipate ESG performance trends and potential issues."
+      icon: <Target className="h-6 w-6" />,
+      title: 'Sector Comparison',
+      description:
+        'Compare ESG performance across different industry sectors to identify leaders and laggards.',
+      color: '#10b981',
     },
     {
-      icon: Users,
-      title: "Stakeholder Focus",
-      description: "Multi-stakeholder perspective considering investors, regulators, and community impact."
+      icon: <Database className="h-6 w-6" />,
+      title: 'Data-Driven Insights',
+      description:
+        'Access cleaned and processed ESG data with regular updates and comprehensive coverage.',
+      color: '#06b6d4',
     },
     {
-      icon: Zap,
-      title: "Real-time Updates",
-      description: "Continuous monitoring and updates to ensure the most current ESG intelligence."
-    }
+      icon: <Lightbulb className="h-6 w-6" />,
+      title: 'Actionable Recommendations',
+      description:
+        'Receive tailored recommendations based on ESG analysis to improve sustainability strategies.',
+      color: '#eab308',
+    },
   ];
 
-  const methodology = [
-    {
-      step: "1",
-      title: "Data Collection",
-      description: "Aggregate ESG data from multiple reliable sources including corporate reports, news, and regulatory filings."
-    },
-    {
-      step: "2", 
-      title: "Feature Engineering",
-      description: "Transform raw ESG data into meaningful features that capture risk patterns and sustainability metrics."
-    },
-    {
-      step: "3",
-      title: "Model Training",
-      description: "Train ensemble models using Random Forest and other algorithms to predict ESG risk scores."
-    },
-    {
-      step: "4",
-      title: "Validation",
-      description: "Rigorous backtesting and cross-validation to ensure model accuracy and reliability."
-    },
-    {
-      step: "5",
-      title: "Monitoring",
-      description: "Continuous model monitoring and retraining to maintain performance as market conditions evolve."
-    }
-  ];
-
-  const technologies = [
-    { name: "FastAPI", description: "High-performance Python web framework" },
-    { name: "scikit-learn", description: "Machine learning library for risk modeling" },
-    { name: "React", description: "Modern frontend framework for interactive UI" },
-    { name: "TypeScript", description: "Type-safe development for reliability" },
-    { name: "TanStack Query", description: "Powerful data fetching and caching" },
-    { name: "ShadCN UI", description: "Accessible and customizable components" }
+  const techStack = [
+    { name: 'React', icon: <Code className="h-4 w-4" /> },
+    { name: 'TypeScript', icon: <Code className="h-4 w-4" /> },
+    { name: 'FastAPI', icon: <Code className="h-4 w-4" /> },
+    { name: 'PostgreSQL', icon: <Database className="h-4 w-4" /> },
+    { name: 'PyTorch', icon: <Brain className="h-4 w-4" /> },
+    { name: 'Tailwind CSS', icon: <Code className="h-4 w-4" /> },
   ];
 
   return (
-    <div className="min-h-screen flex">
-      <Sidebar />
-      <main className="flex-1 ml-16 lg:ml-72 transition-all duration-300">
-        <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-gradient-primary mb-4">
-              About ESG Analytics Platform
-            </h1>
-            <p className="text-lg text-foreground-secondary max-w-3xl mx-auto">
-              Advanced ESG risk analysis platform powered by artificial intelligence, 
-              providing comprehensive sustainability insights for informed investment decisions.
-            </p>
-          </div>
-
-          {/* Key Features */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold mb-6 text-center">Platform Features</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {features.map((feature, index) => {
-                const IconComponent = feature.icon;
-                return (
-                  <Card key={index} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                          <IconComponent className="h-6 w-6 text-primary" />
-                        </div>
-                        <CardTitle className="text-lg">{feature.title}</CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground">{feature.description}</p>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </section>
-
-          {/* Methodology */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold mb-6 text-center">Our Methodology</h2>
-            <Card>
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  {methodology.map((step, index) => (
-                    <div key={index} className="flex items-start gap-4">
-                      <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
-                        {step.step}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold mb-1">{step.title}</h3>
-                        <p className="text-muted-foreground">{step.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Model Information */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold mb-6 text-center">AI Model Details</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Brain className="h-5 w-5" />
-                    Model Performance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {modelLoading ? (
-                    <div className="space-y-3">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-4 w-24" />
-                    </div>
-                  ) : modelInfo ? (
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Algorithm</span>
-                        <Badge variant="outline">Random Forest Classifier</Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Model Version</span>
-                        <Badge className="bg-green-100 text-green-800">
-                          v{modelInfo.version}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Features</span>
-                        <Badge variant="outline">{modelInfo.features.length} variables</Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Framework</span>
-                        <Badge variant="outline">scikit-learn {modelInfo.sklearn_version_runtime}</Badge>
-                      </div>
-                    </div>
-                  ) : (
-                    <Alert>
-                      <Brain className="h-4 w-4" />
-                      <AlertDescription>Model information is currently unavailable.</AlertDescription>
-                    </Alert>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Target className="h-5 w-5" />
-                    Key Capabilities
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm">ESG Risk Score Prediction</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm">Sector-wise Risk Analysis</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm">Company Performance Ranking</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm">Controversy Detection</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm">Feature Importance Analysis</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                      <span className="text-sm">Batch Processing Support</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </section>
-
-          {/* Technology Stack */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold mb-6 text-center">Technology Stack</h2>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Code className="h-5 w-5" />
-                  Built With Modern Technologies
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {technologies.map((tech, index) => (
-                    <div key={index} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <h4 className="font-semibold mb-1">{tech.name}</h4>
-                      <p className="text-sm text-muted-foreground">{tech.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Data Sources & Disclaimers */}
-          <section className="mb-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Database className="h-5 w-5" />
-                    Data Sources
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-2">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-sm">Corporate ESG reports and sustainability disclosures</p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-sm">Regulatory filings and compliance data</p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-sm">Third-party ESG rating agencies</p>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-sm">News and media monitoring for controversies</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Important Disclaimers
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 text-sm text-muted-foreground">
-                    <p>
-                      This platform provides ESG risk analysis for informational purposes only. 
-                      It should not be considered as investment advice.
-                    </p>
-                    <p>
-                      ESG scores and predictions are based on available data and may not reflect 
-                      all relevant factors affecting company performance.
-                    </p>
-                    <p>
-                      Users should conduct their own due diligence and consult financial 
-                      advisors before making investment decisions.
-                    </p>
-                    <p>
-                      Data accuracy and model performance may vary. Results should be 
-                      validated with additional research.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </section>
-
-          {/* Contact & Support */}
-          <section>
-            <Card className="bg-gradient-to-r from-primary/5 to-primary/10">
-              <CardContent className="p-8 text-center">
-                <h3 className="text-2xl font-bold mb-4">Get Started Today</h3>
-                <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                  Explore our comprehensive ESG analytics platform and discover how AI-powered 
-                  insights can enhance your sustainability strategy and investment decisions.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Badge variant="outline" className="px-4 py-2">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Documentation
-                  </Badge>
-                  <Badge variant="outline" className="px-4 py-2">
-                    <Code className="h-4 w-4 mr-2" />
-                    API Reference
-                  </Badge>
-                  <Badge variant="outline" className="px-4 py-2">
-                    <Users className="h-4 w-4 mr-2" />
-                    Support
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-12"
+    >
+      {/* Hero Section */}
+      <motion.section variants={itemVariants} className="text-center py-8">
+        <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 mb-6">
+          <Leaf className="h-8 w-8 text-primary" />
         </div>
-      </main>
-    </div>
-  );
-};
+        <h1 className="text-4xl font-bold mb-4">About ESG Analytics</h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Empowering sustainable investment decisions through comprehensive ESG
+          data analysis and AI-powered insights.
+        </p>
+      </motion.section>
 
-export default About;
+      {/* Mission Statement */}
+      <motion.section variants={itemVariants}>
+        <Card className="bg-gradient-to-r from-primary/10 to-purple-500/10 border-none">
+          <CardContent className="py-8">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-2xl font-bold mb-4">Our Mission</h2>
+              <p className="text-muted-foreground">
+                We believe that transparency in environmental, social, and governance
+                practices is essential for building a sustainable future. Our platform
+                democratizes access to ESG data, enabling investors, researchers, and
+                organizations to make informed decisions that align financial returns
+                with positive impact.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.section>
+
+      {/* Features */}
+      <motion.section variants={itemVariants}>
+        <h2 className="text-2xl font-bold text-center mb-8">What We Offer</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((feature) => (
+            <FeatureCard key={feature.title} {...feature} />
+          ))}
+        </div>
+      </motion.section>
+
+      {/* Tech Stack */}
+      <motion.section variants={itemVariants}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Technology Stack</CardTitle>
+            <CardDescription>
+              Built with modern, scalable technologies for reliable performance
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-3">
+              {techStack.map((tech) => (
+                <TechItem key={tech.name} {...tech} />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </motion.section>
+
+      {/* Data Sources */}
+      <motion.section variants={itemVariants}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Data & Methodology</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              Our ESG data is sourced from publicly available datasets and processed
+              using rigorous data cleaning and normalization techniques. Our scoring
+              methodology considers:
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 rounded-lg border">
+                <div className="flex items-center gap-2 mb-2">
+                  <Leaf className="h-5 w-5 text-green-500" />
+                  <h4 className="font-medium">Environmental</h4>
+                </div>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Carbon emissions</li>
+                  <li>• Resource usage</li>
+                  <li>• Waste management</li>
+                  <li>• Climate policies</li>
+                </ul>
+              </div>
+              <div className="p-4 rounded-lg border">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users className="h-5 w-5 text-blue-500" />
+                  <h4 className="font-medium">Social</h4>
+                </div>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Labor practices</li>
+                  <li>• Human rights</li>
+                  <li>• Community impact</li>
+                  <li>• Product safety</li>
+                </ul>
+              </div>
+              <div className="p-4 rounded-lg border">
+                <div className="flex items-center gap-2 mb-2">
+                  <Shield className="h-5 w-5 text-purple-500" />
+                  <h4 className="font-medium">Governance</h4>
+                </div>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Board structure</li>
+                  <li>• Executive compensation</li>
+                  <li>• Shareholder rights</li>
+                  <li>• Business ethics</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.section>
+
+      {/* Contact */}
+      <motion.section variants={itemVariants}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Get in Touch</CardTitle>
+            <CardDescription>
+              Have questions or feedback? We'd love to hear from you.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-4">
+              <Button variant="outline" asChild>
+                <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+                  <Github className="h-4 w-4 mr-2" />
+                  GitHub
+                </a>
+              </Button>
+              <Button variant="outline" asChild>
+                <a href="mailto:contact@esg-analytics.com">
+                  <Mail className="h-4 w-4 mr-2" />
+                  Contact Us
+                </a>
+              </Button>
+              <Button asChild>
+                <Link to="/predictor">
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Try the Predictor
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.section>
+    </motion.div>
+  );
+}
+
+export default memo(About);
