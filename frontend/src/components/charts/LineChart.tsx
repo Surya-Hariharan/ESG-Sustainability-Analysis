@@ -113,7 +113,7 @@ function LineChart({
         />
         <Tooltip content={<CustomTooltip formatValue={formatTooltip} />} />
         {showLegend && <Legend />}
-        {lines.map((line, index) => (
+        {lines.map((line) => (
           <Line
             key={line.key}
             type={curved ? 'monotone' : 'linear'}

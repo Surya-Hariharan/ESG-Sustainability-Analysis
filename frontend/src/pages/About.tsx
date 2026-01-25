@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Target, Users, Zap, Shield, Award, Github, Linkedin, Mail } from 'lucide-react';
+import { Target, Zap, Shield, Github, Linkedin, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import PageLayout from '@/components/PageLayout';

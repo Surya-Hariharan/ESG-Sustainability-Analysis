@@ -50,7 +50,6 @@ const renderLabel = ({
   innerRadius,
   outerRadius,
   percent,
-  name,
 }: {
   cx: number;
   cy: number;
@@ -58,7 +57,7 @@ const renderLabel = ({
   innerRadius: number;
   outerRadius: number;
   percent: number;
-  name: string;
+  name?: string;
 }) => {
   if (percent < 0.05) return null; // Don't show labels for small slices
 

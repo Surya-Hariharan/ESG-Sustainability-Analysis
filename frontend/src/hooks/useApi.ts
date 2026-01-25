@@ -56,7 +56,7 @@ export function useApi<T>(
     // Check cache first
     const cached = cache.get(key);
     if (cached && Date.now() - cached.timestamp < cacheTime) {
-      setState((prev: ApiState<T>) => ({
+      setState((prev: UseApiState<T>) => ({
         ...prev,
         data: cached.data as T,
         isLoading: false,
@@ -66,7 +66,7 @@ export function useApi<T>(
       return;
     }
 
-    setState((prev: ApiState<T>) => ({ ...prev, isFetching: true, isError: false, error: null }));
+    setState((prev: UseApiState<T>) => ({ ...prev, isFetching: true, isError: false, error: null }));
 
     try {
       const data = await fetcher();
@@ -131,7 +131,7 @@ export function useApi<T>(
   // Refetch interval
   useEffect(() => {
     if (refetchInterval && enabled) {
-      intervalRef.current = setInterval(fetchData, refetchInterval);
+      intervalRef.current = setInterval(fetchData, refetchInterval) as unknown as number;
     }
 
     return () => {
