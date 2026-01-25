@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import LightPillar from '@/components/LightPillar';
 import Footer from '@/components/Footer';
+import BlurText from '@/components/BlurText';
 
 const Index = () => {
   const features = [
@@ -71,11 +72,13 @@ const Index = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-purple-500 to-secondary bg-clip-text text-transparent">
-                ESG Sustainability
-                <br />
-                Analytics Platform
-              </h1>
+              <BlurText
+                text="ESG Sustainability Analytics Platform"
+                delay={150}
+                animateBy="words"
+                direction="top"
+                className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-purple-500 to-secondary bg-clip-text text-transparent"
+              />
               <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
                 Unlock powerful insights into corporate sustainability performance with AI-driven
                 analytics and comprehensive ESG metrics
