@@ -50,13 +50,13 @@ export function useApi<T>(
   });
 
   const mountedRef = useRef(true);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<number | null>(null);
 
   const fetchData = useCallback(async () => {
     // Check cache first
     const cached = cache.get(key);
     if (cached && Date.now() - cached.timestamp < cacheTime) {
-      setState((prev) => ({
+      setState((prev: ApiState<T>) => ({
         ...prev,
         data: cached.data as T,
         isLoading: false,
@@ -66,7 +66,7 @@ export function useApi<T>(
       return;
     }
 
-    setState((prev) => ({ ...prev, isFetching: true, isError: false, error: null }));
+    setState((prev: ApiState<T>) => ({ ...prev, isFetching: true, isError: false, error: null }));
 
     try {
       const data = await fetcher();
