@@ -33,8 +33,23 @@ openpyxl>=3.1.2
 xlrd>=2.0.1
 requests>=2.31.0
 
-# Optional: ML/EDA
+# ML/EDA
 scikit-learn>=1.2.2
+
+# PyTorch for advanced ML
+torch>=2.1.0
+torchvision>=0.16.0
+tensorboard>=2.15.0
+
+# Hyperparameter optimization
+optuna>=3.4.0
+
+# Performance & Caching
+redis>=5.0.0
+python-redis>=4.6.0
+
+# Rate limiting
+slowapi>=0.1.9
 
 # Testing
 pytest>=7.4.2
