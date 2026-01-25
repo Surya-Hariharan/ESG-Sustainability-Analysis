@@ -13,25 +13,25 @@ const Index = () => {
       icon: TrendingUp,
       title: 'ESG Analytics',
       description: 'Comprehensive environmental, social, and governance metrics analysis',
-      color: 'from-green-500 to-emerald-600',
+      color: 'from-[#9429FF] to-[#B76EFF]',
     },
     {
       icon: Shield,
       title: 'Risk Assessment',
       description: 'AI-powered risk prediction and controversy detection',
-      color: 'from-blue-500 to-cyan-600',
+      color: 'from-[#6B9EFF] to-[#9EFFCD]',
     },
     {
       icon: BarChart3,
       title: 'Sector Insights',
       description: 'Industry-wide comparisons and benchmarking',
-      color: 'from-purple-500 to-pink-600',
+      color: 'from-[#9429FF] to-[#9EFFCD]',
     },
     {
       icon: Zap,
       title: 'Real-time Data',
       description: 'Up-to-date company performance and sustainability scores',
-      color: 'from-orange-500 to-red-600',
+      color: 'from-[#7AFFCD] to-[#6BFFEA]',
     },
   ];
 
