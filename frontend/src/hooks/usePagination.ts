@@ -63,13 +63,13 @@ export function usePagination(config: PaginationConfig = {}): PaginationState & 
 
   const nextPage = useCallback(() => {
     if (hasNextPage) {
-      setPageState((prev) => prev + 1);
+      setPageState((prev: number) => prev + 1);
     }
   }, [hasNextPage]);
 
   const previousPage = useCallback(() => {
     if (hasPreviousPage) {
-      setPageState((prev) => prev - 1);
+      setPageState((prev: number) => prev - 1);
     }
   }, [hasPreviousPage]);
 
