@@ -1,6 +1,16 @@
-# Model artifacts
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Model artifacts (keep metadata)
 models/*.joblib
 models/*.pkl
+!models/*.meta.json
 
 # Reports generated data
 reports/predictions/
@@ -9,20 +19,22 @@ reports/tables/
 
 # Notebook checkpoints
 .ipynb_checkpoints/
+*.ipynb_checkpoints/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
 
 # Virtual environments
 venv/
 env/
 .venv/
-.env/
-
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints/
+ENV/
+env.bak/
+venv.bak/
 
 # Python packaging
 *.egg
@@ -30,22 +42,51 @@ env/
 dist/
 build/
 *.whl
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+.tox/
+nosetests.xml
+coverage/
 
 # Logs and database dumps
 *.log
+logs/
 *.sqlite3
 *.db
-*.sql
+*.sql.bak
 
 # OS files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+Desktop.ini
 
 # IDE / Editor files
 .vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 .idea/
 *.sublime-project
 *.sublime-workspace
+*.swp
+*.swo
+*~
+.project
+.pydevproject
 
 # Power BI / Tableau
 *.pbix
@@ -54,11 +95,72 @@ Thumbs.db
 *.tde
 *.hyper
 
-# Optional: cache folders
+# Cache folders
 __pycache__/
 .cache/
 *.tmp
 *.bak
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
 
-# Environment config files (if you want to keep local secrets out)
-.env
+# Distribution / packaging
+*.tar.gz
+*.zip
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# Docker
+.dockerignore
+
+# Kubernetes
+*.kubeconfig
+
+# Pre-commit
+.pre-commit-config.yaml.bak
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# Data files (exclude large datasets)
+data/raw/*.csv
+data/raw/*.xlsx
+data/raw/*.json
+data/processed/*.csv
+!data/processed/esg_dashboard_ready.csv
+*.parquet
+*.feather
+
+# Keep structure files
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+

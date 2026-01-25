@@ -1,11 +1,13 @@
 """FastAPI application exposing ESG analytics and prediction endpoints."""
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from typing import List
 import uvicorn
 import logging
+import os
 from .utils import fetch_query, get_db_health
 from .db_init import ensure_database_ready
 from .schemas import (
@@ -23,18 +25,51 @@ from .model import (
     save_metadata,
 )
 import sklearn  # type: ignore
+from starlette.middleware.base import BaseHTTPMiddleware
 
 logger = logging.getLogger("esg_api")
-logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(name)s | %(message)s")
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO"),
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+)
 
-app = FastAPI(title="ESG Dashboard API", description="Endpoints for ESG analytics and risk prediction", version="1.0.0")
+app = FastAPI(
+    title="ESG Dashboard API",
+    description="Endpoints for ESG analytics and risk prediction",
+    version="1.0.0",
+    docs_url="/api/docs" if os.getenv("ENVIRONMENT") != "production" else None,
+    redoc_url="/api/redoc" if os.getenv("ENVIRONMENT") != "production" else None,
+)
 
+
+# Security Headers Middleware
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        return response
+
+
+app.add_middleware(SecurityHeadersMiddleware)
+
+# CORS Configuration
+allowed_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Restrict in production
-    allow_methods=["*"],
+    allow_origins=allowed_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
+# Trusted Host Middleware
+allowed_hosts = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
 
 
 @app.on_event("startup")
@@ -186,4 +221,15 @@ def generic_exception_handler(request, exc):  # type: ignore
 
 
 if __name__ == "__main__":  # pragma: no cover
-    uvicorn.run("backend.app:app", host="0.0.0.0", port=8000, reload=True)
+    host = os.getenv("API_HOST", "0.0.0.0")
+    port = int(os.getenv("API_PORT", "8000"))
+    reload = os.getenv("API_RELOAD", "True").lower() == "true"
+    workers = int(os.getenv("API_WORKERS", "1")) if not reload else None
+    
+    uvicorn.run(
+        "backend.app:app",
+        host=host,
+        port=port,
+        reload=reload,
+        workers=workers
+    )
