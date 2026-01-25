@@ -13,10 +13,10 @@
     --card-foreground: 210 40% 98%;
     --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
-    --primary: 148 83% 58%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 158 100% 81%;
-    --secondary-foreground: 222 47% 11%;
+    --primary: 199 89% 48%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 271 91% 65%;
+    --secondary-foreground: 210 40% 98%;
     --muted: 217 33% 17%;
     --muted-foreground: 215 20% 65%;
     --accent: 217 33% 17%;
@@ -25,7 +25,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217 33% 17%;
     --input: 217 33% 17%;
-    --ring: 148 83% 58%;
+    --ring: 199 89% 48%;
     --radius: 0.5rem;
 
     /* ESG-specific colors */

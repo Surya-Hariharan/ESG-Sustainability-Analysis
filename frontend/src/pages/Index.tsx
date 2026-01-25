@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import LightPillar from '@/components/LightPillar';
 import Footer from '@/components/Footer';
 import BlurText from '@/components/BlurText';
+import TextType from '@/components/TextType';
 
 const Index = () => {
   const features = [
@@ -79,10 +80,23 @@ const Index = () => {
                 direction="top"
                 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-purple-500 to-secondary bg-clip-text text-transparent"
               />
-              <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-                Unlock powerful insights into corporate sustainability performance with AI-driven
-                analytics and comprehensive ESG metrics
-              </p>
+              <div className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto min-h-[80px] flex items-center justify-center">
+                <TextType 
+                  text={[
+                    "Unlock powerful insights into corporate sustainability performance",
+                    "AI-driven analytics and comprehensive ESG metrics",
+                    "Make informed decisions about corporate sustainability",
+                    "Transform your ESG analysis with cutting-edge technology"
+                  ]}
+                  typingSpeed={50}
+                  deletingSpeed={30}
+                  pauseDuration={2000}
+                  showCursor
+                  cursorCharacter="|"
+                  cursorBlinkDuration={0.7}
+                  className="text-xl md:text-2xl"
+                />
+              </div>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Link to="/companies">
                   <Button size="lg" className="rounded-full px-8 group">
@@ -156,18 +170,19 @@ const Index = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
+                  className="h-full"
                 >
-                  <Card className="backdrop-blur-xl bg-background/60 border-white/10 hover:bg-background/80 transition-all duration-300 group">
-                    <CardContent className="p-8">
-                      <div className="flex items-start space-x-4">
+                  <Card className="backdrop-blur-xl bg-background/60 border-white/10 hover:bg-background/80 transition-all duration-300 group h-full">
+                    <CardContent className="p-8 h-full">
+                      <div className="flex items-start space-x-4 h-full">
                         <div
-                          className={`p-3 rounded-xl bg-gradient-to-r ${feature.color} text-white group-hover:scale-110 transition-transform`}
+                          className={`p-3 rounded-xl bg-gradient-to-r ${feature.color} text-white group-hover:scale-110 transition-transform flex-shrink-0`}
                         >
                           <feature.icon className="h-6 w-6" />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 flex flex-col">
                           <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                          <p className="text-muted-foreground">{feature.description}</p>
+                          <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -180,35 +195,75 @@ const Index = () => {
 
         {/* CTA Section */}
         <section className="py-20 px-4">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <Card className="backdrop-blur-xl bg-gradient-to-r from-primary/10 to-secondary/10 border-white/20">
-                <CardContent className="p-12 text-center">
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                    Ready to Transform Your ESG Analysis?
-                  </h2>
-                  <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                    Start exploring comprehensive sustainability data and AI-powered insights today
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Link to="/sectors">
-                      <Button size="lg" className="rounded-full px-8">
-                        View Sector Analytics
-                      </Button>
-                    </Link>
-                    <Link to="/about">
-                      <Button size="lg" variant="outline" className="rounded-full px-8">
-                        Learn More
-                      </Button>
-                    </Link>
+              <div className="relative overflow-hidden rounded-3xl">
+                {/* Animated gradient background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-cyan-600/20" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-purple-500/10 to-transparent" />
+                
+                {/* Content */}
+                <div className="relative backdrop-blur-xl bg-background/40 border border-white/10 p-12 md:p-16">
+                  <div className="max-w-3xl mx-auto text-center">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                      viewport={{ once: true }}
+                    >
+                      <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                        Ready to Transform Your ESG Analysis?
+                      </h2>
+                    </motion.div>
+                    
+                    <motion.p
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.3 }}
+                      viewport={{ once: true }}
+                      className="text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed"
+                    >
+                      Start exploring comprehensive sustainability data and AI-powered insights today
+                    </motion.p>
+                    
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.4 }}
+                      viewport={{ once: true }}
+                      className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+                    >
+                      <Link to="/sectors">
+                        <Button 
+                          size="lg" 
+                          className="rounded-full px-10 py-6 text-base font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 group"
+                        >
+                          View Sector Analytics
+                          <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                        </Button>
+                      </Link>
+                      <Link to="/about">
+                        <Button 
+                          size="lg" 
+                          variant="outline" 
+                          className="rounded-full px-10 py-6 text-base font-semibold border-2 border-purple-500/50 hover:border-purple-400 hover:bg-purple-500/10 transition-all duration-300"
+                        >
+                          Learn More
+                        </Button>
+                      </Link>
+                    </motion.div>
                   </div>
-                </CardContent>
-              </Card>
+                  
+                  {/* Decorative elements */}
+                  <div className="absolute top-0 left-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl" />
+                  <div className="absolute bottom-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl" />
+                </div>
+              </div>
             </motion.div>
           </div>
         </section>
