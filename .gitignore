@@ -1,4 +1,6 @@
-# Environment variables and secrets
+# ========================================
+# Environment & Secrets
+# ========================================
 .env
 .env.*
 !.env.example
@@ -7,20 +9,9 @@
 .env.test.local
 .env.production.local
 
-# Model artifacts (keep metadata)
-models/*.joblib
-models/*.pkl
-!models/*.meta.json
-
-# Reports generated data
-reports/predictions/
-reports/figures/
-reports/tables/
-
-# Notebook checkpoints
-.ipynb_checkpoints/
-*.ipynb_checkpoints/
-
+# ========================================
+# Python
+# ========================================
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -36,7 +27,7 @@ ENV/
 env.bak/
 venv.bak/
 
-# Python packaging
+# Packaging
 *.egg
 *.egg-info/
 dist/
@@ -44,7 +35,14 @@ build/
 *.whl
 .eggs/
 
-# Testing
+# Version managers
+.python-version
+Pipfile.lock
+poetry.lock
+
+# ========================================
+# Testing & Coverage
+# ========================================
 .pytest_cache/
 .coverage
 .coverage.*
@@ -56,100 +54,21 @@ coverage.xml
 nosetests.xml
 coverage/
 
-# Logs and database dumps
-*.log
-logs/
-*.sqlite3
-*.db
-*.sql.bak
-
-# OS files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-Desktop.ini
-
-# IDE / Editor files
-.vscode/
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-.idea/
-*.sublime-project
-*.sublime-workspace
-*.swp
-*.swo
-*~
-.project
-.pydevproject
-
-# Power BI / Tableau
-*.pbix
-*.twb
-*.twbx
-*.tde
-*.hyper
-
-# Cache folders
-__pycache__/
-.cache/
-*.tmp
-*.bak
+# ========================================
+# Linting & Type Checking
+# ========================================
 .mypy_cache/
 .dmypy.json
 dmypy.json
 .ruff_cache/
 
-# Distribution / packaging
-*.tar.gz
-*.zip
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# pipenv
-Pipfile.lock
-
-# poetry
-poetry.lock
-
-# Celery
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath parsed files
-*.sage.py
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# Docker
-.dockerignore
-
-# Kubernetes
-*.kubeconfig
-
-# Pre-commit
-.pre-commit-config.yaml.bak
-
-# MLflow
-mlruns/
-mlartifacts/
+# ========================================
+# ML & Data
+# ========================================
+# Model artifacts (keep metadata)
+models/*.joblib
+models/*.pkl
+!models/*.meta.json
 
 # Data files (exclude large datasets)
 data/raw/*.csv
@@ -160,7 +79,101 @@ data/processed/*.csv
 *.parquet
 *.feather
 
-# Keep structure files
-!data/raw/.gitkeep
-!data/processed/.gitkeep
+# MLflow
+mlruns/
+mlartifacts/
+
+# ========================================
+# Jupyter Notebooks
+# ========================================
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# ========================================
+# Logs & Databases
+# ========================================
+*.log
+logs/
+*.sqlite3
+*.db
+*.sql.bak
+
+# ========================================
+# Frontend (Node.js)
+# ========================================
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/.cache/
+frontend/coverage/
+frontend/.env.local
+frontend/.vercel
+
+# ========================================
+# IDE / Editor
+# ========================================
+# VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains
+.idea/
+
+# Sublime
+*.sublime-project
+*.sublime-workspace
+
+# Vim/Emacs
+*.swp
+*.swo
+*~
+
+# Eclipse
+.project
+.pydevproject
+
+# ========================================
+# OS Files
+# ========================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ========================================
+# Docker & Deployment
+# ========================================
+# Docker volumes
+*.dockerignore.bak
+docker-compose.override.yml
+
+# Kubernetes
+*.kubeconfig
+
+# ========================================
+# Reports & Generated Files
+# ========================================
+reports/predictions/
+reports/figures/
+reports/tables/
+
+# ========================================
+# Cache & Temp
+# ========================================
+.cache/
+*.tmp
+*.bak
+*.tar.gz
+*.zip
 

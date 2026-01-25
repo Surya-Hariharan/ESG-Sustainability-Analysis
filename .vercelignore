@@ -1,8 +1,41 @@
-# Vercel
-
+# Vercel deployment cache
 .vercel
 
-## Build output
-
+# Build outputs
 dist/
 build/
+.vite/
+
+# Node modules
+node_modules/
+
+# Cache
+.cache/
+
+# Environment (use Vercel env vars)
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Backend files (not needed for frontend deployment)
+backend/
+scripts/
+models/
+data/
+notebooks/
+*.py
+pyproject.toml
+requirements.txt
+Dockerfile
+.dockerignore
