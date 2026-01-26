@@ -2,6 +2,7 @@ import { memo, Suspense, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import Navigation from './Navigation';
+import LightPillar from './LightPillar';
 import { Spinner } from '@/components/ui';
 
 interface LayoutProps {
@@ -77,10 +78,28 @@ function Layout({ children }: LayoutProps) {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="relative min-h-screen flex flex-col bg-background">
+      {/* Background Light Pillar - consistent across all pages */}
+      <div className="fixed inset-0 z-0 opacity-30 pointer-events-none">
+        <LightPillar
+          topColor="#9429FF"
+          bottomColor="#9EFFCD"
+          intensity={1}
+          rotationSpeed={0.3}
+          glowAmount={0.002}
+          pillarWidth={3}
+          pillarHeight={0.4}
+          noiseIntensity={0.5}
+          pillarRotation={25}
+          interactive={false}
+          mixBlendMode="screen"
+          quality="high"
+        />
+      </div>
+
       <Navigation />
 
-      <main className="flex-1">
+      <main className="relative z-10 flex-1">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}

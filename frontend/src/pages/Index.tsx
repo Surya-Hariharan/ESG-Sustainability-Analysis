@@ -3,7 +3,6 @@ import { ArrowRight, TrendingUp, Shield, BarChart3, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import LightPillar from '@/components/LightPillar';
 import Footer from '@/components/Footer';
 import BlurText from '@/components/BlurText';
 import TextType from '@/components/TextType';
@@ -44,27 +43,7 @@ const Index = () => {
   ];
 
   return (
-    <div className="relative min-h-screen">
-      {/* Background Light Pillar */}
-      <div className="fixed inset-0 z-0 opacity-30">
-        <LightPillar
-          topColor="#9429FF"
-          bottomColor="#9EFFCD"
-          intensity={1}
-          rotationSpeed={0.3}
-          glowAmount={0.002}
-          pillarWidth={3}
-          pillarHeight={0.4}
-          noiseIntensity={0.5}
-          pillarRotation={25}
-          interactive={false}
-          mixBlendMode="screen"
-          quality="high"
-        />
-      </div>
-
-      {/* Content Wrapper - properly isolated from background */}
-      <div className="relative z-10">
+    <div className="relative">
         {/* Hero Section */}
         <section className="min-h-[80vh] flex items-center justify-center px-4 py-20">
           <div className="max-w-6xl mx-auto text-center">
@@ -80,7 +59,7 @@ const Index = () => {
                 direction="top"
                 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-purple-500 to-secondary bg-clip-text text-transparent"
               />
-              <div className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto min-h-[80px] flex items-center justify-center">
+              <div className="text-muted-foreground mb-8 max-w-3xl mx-auto min-h-[120px] flex items-center justify-center">
                 <TextType 
                   text={[
                     "Unlock powerful insights into corporate sustainability performance",
@@ -94,7 +73,6 @@ const Index = () => {
                   showCursor
                   cursorCharacter="|"
                   cursorBlinkDuration={0.7}
-                  className="text-xl md:text-2xl"
                 />
               </div>
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -271,8 +249,8 @@ const Index = () => {
         {/* Footer */}
         <Footer />
       </div>
-    </div>
-  );
+    );
+  };
 };
 
 export default Index;

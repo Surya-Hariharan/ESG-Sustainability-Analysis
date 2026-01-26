@@ -1,12 +1,22 @@
 .text-type {
   display: inline-block;
   white-space: pre-wrap;
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.4;
+}
+
+@media (min-width: 768px) {
+  .text-type {
+    font-size: 1.875rem;
+  }
 }
 
 .text-type__cursor {
   margin-left: 0.25rem;
   display: inline-block;
   opacity: 1;
+  font-weight: 700;
 }
 
 .text-type__cursor--hidden {
