@@ -41,12 +41,12 @@ def _table_exists(conn, table_name: str) -> bool:
 
 
 def run_schema_if_needed():
-    """Create core tables if they are missing by executing `schema.sql`.
+    """Create core tables if they are missing by executing `01_create_tables.sql`.
 
     Safe to call multiple times; the SQL uses IF NOT EXISTS.
     """
     base_dir = Path(__file__).resolve().parent
-    schema_path = base_dir / "sql" / "schema.sql"
+    schema_path = base_dir / "sql" / "01_create_tables.sql"
     if not schema_path.exists():  # pragma: no cover - defensive
         logger.warning("Schema file not found at %s", schema_path)
         return

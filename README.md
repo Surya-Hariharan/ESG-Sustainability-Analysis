@@ -101,7 +101,7 @@ cp .env.example .env
 createdb esg_db
 
 # Apply schema
-psql -h localhost -U postgres -d esg_db -f backend/sql/schema.sql
+psql -h localhost -U postgres -d esg_db -f backend/sql/01_create_tables.sql
 
 # Load sample data (optional)
 python scripts/database_loader.py
