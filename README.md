@@ -29,8 +29,12 @@ A production-ready, full-stack ESG (Environmental, Social, Governance) analytics
 
 ```
 ├── backend/                      # FastAPI application
-│   ├── app.py                    # Main API with security middleware
-│   ├── db_config.py              # Database connection
+│   ├── main.py                   # Main API entry point
+│   ├── core/                     # Core configuration
+│   ├── middleware/               # Security middleware
+│   ├── routers/                  # API route handlers
+│   ├── services/                 # Business logic services
+│   ├── db_init.py                # Database initialization
 │   ├── logging_config.py         # Centralized logging
 │   ├── model.py                  # ML model inference
 │   ├── schemas.py                # Pydantic validation
@@ -126,7 +130,7 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 # Run backend
-python -m backend.app
+python -m backend.main
 ```
 
 **Backend URL**: http://localhost:8000  

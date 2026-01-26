@@ -7,13 +7,23 @@ so that local development (or a fresh environment) does not crash with
 from pathlib import Path
 import logging
 import psycopg2
-
-from .db_config import get_connection
-from .utils import load_dataframe_to_db  # reuse existing bulk loader
 import pandas as pd
 import os
 
+from .utils import load_dataframe_to_db
+
 logger = logging.getLogger(__name__)
+
+
+def _get_simple_connection():
+    """Get a simple database connection for initialization operations."""
+    return psycopg2.connect(
+        host=os.getenv("DB_HOST", "localhost"),
+        port=int(os.getenv("DB_PORT", 5432)),
+        database=os.getenv("DB_NAME", "esg_db"),
+        user=os.getenv("DB_USER", "postgres"),
+        password=os.getenv("DB_PASSWORD", ""),
+    )
 
 
 def _table_exists(conn, table_name: str) -> bool:
@@ -41,7 +51,7 @@ def run_schema_if_needed():
         logger.warning("Schema file not found at %s", schema_path)
         return
 
-    conn = get_connection()
+    conn = _get_simple_connection()
     # Enable autocommit BEFORE any statements are executed so we can run the full schema script safely
     conn.autocommit = True
     try:
@@ -77,7 +87,7 @@ def _bootstrap_data_if_empty():
         logger.info("AUTO_LOAD_ESG_CSV disabled; skipping automatic data load.")
         return
 
-    conn = get_connection()
+    conn = _get_simple_connection()
     conn.autocommit = True
     try:
         with conn.cursor() as cur:

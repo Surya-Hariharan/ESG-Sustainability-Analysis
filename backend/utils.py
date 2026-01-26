@@ -1,11 +1,31 @@
+"""Utility functions for database operations and data loading.
+
+Provides helper functions for bulk data loading, query execution,
+and database health checks.
+"""
 import pandas as pd
 import numpy as np
-from .db_config import get_connection
-from psycopg2.extras import execute_values
 import psycopg2
+from psycopg2.extras import execute_values
 import logging
+import os
 
 logger = logging.getLogger(__name__)
+
+
+def _get_simple_connection():
+    """Get a simple database connection for bulk operations.
+    
+    Note: This is used for bulk loading operations. For regular queries,
+    use services/database.py which provides connection pooling.
+    """
+    return psycopg2.connect(
+        host=os.getenv("DB_HOST", "localhost"),
+        port=int(os.getenv("DB_PORT", 5432)),
+        database=os.getenv("DB_NAME", "esg_db"),
+        user=os.getenv("DB_USER", "postgres"),
+        password=os.getenv("DB_PASSWORD", ""),
+    )
 
 
 def load_dataframe_to_db(df: pd.DataFrame, table_name: str, chunk_size: int = 10_000):
@@ -15,12 +35,15 @@ def load_dataframe_to_db(df: pd.DataFrame, table_name: str, chunk_size: int = 10
         df: Data to persist.
         table_name: Target table name.
         chunk_size: Number of rows per execute_values batch.
+    
+    Returns:
+        Number of rows inserted.
     """
     if df.empty:
         logger.warning("DataFrame is empty. Skipping load for table %s", table_name)
         return 0
 
-    conn = get_connection()
+    conn = _get_simple_connection()
     cursor = conn.cursor()
     cols = ','.join([f'"{c}"' for c in df.columns])
     total_inserted = 0
@@ -62,8 +85,16 @@ def load_dataframe_to_db(df: pd.DataFrame, table_name: str, chunk_size: int = 10
 
 
 def fetch_query(query: str, params=None) -> pd.DataFrame:
-    """Execute a SQL query and return a pandas DataFrame."""
-    conn = get_connection()
+    """Execute a SQL query and return a pandas DataFrame.
+    
+    Args:
+        query: SQL query string.
+        params: Optional query parameters.
+        
+    Returns:
+        DataFrame with query results.
+    """
+    conn = _get_simple_connection()
     try:
         df = pd.read_sql(query, conn, params=params)  # type: ignore[arg-type]
     finally:
@@ -72,9 +103,13 @@ def fetch_query(query: str, params=None) -> pd.DataFrame:
 
 
 def get_db_health():
-    """Check database connectivity for health endpoint."""
+    """Check database connectivity for health endpoint.
+    
+    Returns:
+        Tuple of (is_healthy: bool, message: str)
+    """
     try:
-        conn = get_connection()
+        conn = _get_simple_connection()
         cur = conn.cursor()
         cur.execute("SELECT 1")
         cur.fetchone()
