@@ -46,15 +46,17 @@ A production-ready, full-stack ESG (Environmental, Social, Governance) analytics
 │   │   └── lib/                  # Utilities
 │   └── package.json
 ├── scripts/                      # ML & data processing scripts
-│   ├── train_pipeline.py         # Training automation with preprocessing
-│   ├── validate_model.py         # Model validation & metrics
-│   ├── predict.py                # Prediction script
-│   ├── preprocessing.py          # Data preprocessing utilities
-│   ├── load_db.py                # Database data loading
-│   ├── generate_reports.py       # Report generation
-│   ├── mlflow_config.py          # Experiment tracking setup
-│   ├── config.py                 # Script configurations
-│   └── experimental/             # Experimental features (PyTorch, AI agents)
+│   ├── settings.py               # Configuration and settings
+│   ├── data_preprocessor.py      # Advanced data cleaning & feature engineering
+│   ├── model_trainer.py          # Model training with preprocessing pipeline
+│   ├── model_validator.py        # Model validation & performance metrics
+│   ├── model_predictor.py        # Batch & single predictions with confidence
+│   ├── hyperparameter_optimizer.py # Optuna-based hyperparameter tuning
+│   ├── ai_agent_pipeline.py      # Crew AI + Groq agentic analysis
+│   ├── database_loader.py        # Database bulk loading utilities
+│   ├── report_generator.py       # Automated report generation
+│   ├── experiment_tracker.py     # MLflow experiment tracking
+│   └── experimental/             # Experimental features (PyTorch, legacy AI)
 ├── notebooks/                    # Jupyter analysis notebooks
 │   ├── 01_data_cleaning.ipynb
 │   ├── 02_eda_visualization.ipynb
@@ -102,7 +104,7 @@ createdb esg_db
 psql -h localhost -U postgres -d esg_db -f backend/sql/schema.sql
 
 # Load sample data (optional)
-python scripts/load_db.py
+python scripts/database_loader.py
 ```
 
 ### 3. Backend Deployment
@@ -188,10 +190,10 @@ For production, use environment variables in your hosting platform.
 
 ```bash
 # Train model
-python scripts/train_pipeline.py
+python scripts/model_trainer.py
 
 # Validate model
-python scripts/validate_model.py \
+python scripts/model_validator.py \
   --model models/esg_risk_model.joblib \
   --test-data data/processed/test_data.csv
 
