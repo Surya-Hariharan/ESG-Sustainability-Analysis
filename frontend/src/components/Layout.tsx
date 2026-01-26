@@ -109,7 +109,7 @@ function Layout({ children }: LayoutProps) {
             variants={pageVariants}
           >
             <Suspense fallback={<PageLoader />}>
-              <div className="container mx-auto px-4 py-6">
+              <div className="container mx-auto px-4 py-2">
                 {children}
               </div>
             </Suspense>

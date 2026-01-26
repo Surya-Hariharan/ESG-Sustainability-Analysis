@@ -44,22 +44,15 @@ const Index = () => {
 
   return (
     <div className="relative">
-        {/* Hero Section */}
-        <section className="min-h-[80vh] flex items-center justify-center px-4 py-20">
+        {/* Hero Section - Only Typing Text and Buttons */}
+        <section className="min-h-screen flex items-center justify-center px-4 -mt-16">
           <div className="max-w-6xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <BlurText
-                text="ESG Sustainability Analytics Platform"
-                delay={150}
-                animateBy="words"
-                direction="top"
-                className="text-6xl md:text-8xl font-extrabold mb-10 bg-gradient-to-r from-white via-purple-300 to-cyan-200 bg-clip-text text-transparent tracking-tight leading-tight"
-              />
-              <div className="mb-12 max-w-5xl mx-auto min-h-[160px] flex items-center justify-center">
+              <div className="mb-16 max-w-5xl mx-auto min-h-[160px] flex items-center justify-center">
                 <TextType 
                   text={[
                     "Unlock powerful insights into corporate sustainability performance",
@@ -75,15 +68,15 @@ const Index = () => {
                   cursorBlinkDuration={0.7}
                 />
               </div>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
                 <Link to="/companies">
-                  <Button size="lg" className="rounded-full px-8 group">
+                  <Button size="lg" className="rounded-full px-10 py-4 text-lg group">
                     Explore Companies
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
                 <Link to="/predictor">
-                  <Button size="lg" variant="outline" className="rounded-full px-8">
+                  <Button size="lg" variant="outline" className="rounded-full px-10 py-4 text-lg">
                     Try Risk Predictor
                   </Button>
                 </Link>
@@ -92,7 +85,7 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Stats Section */}
+        {/* Stats Section - Below the fold */}
         <section className="py-16 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -119,7 +112,7 @@ const Index = () => {
         </section>
 
         {/* Features Section */}
-        <section className="py-20 px-4">
+        <section className="py-12 px-4">
           <div className="max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -172,7 +165,7 @@ const Index = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 px-4">
+        <section className="py-12 px-4">
           <div className="max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}

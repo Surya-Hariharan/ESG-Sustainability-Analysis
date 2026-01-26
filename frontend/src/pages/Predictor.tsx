@@ -113,14 +113,15 @@ const Predictor = () => {
           ))}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-8 items-stretch">
           {/* Input Form */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
+            className="flex"
           >
-            <Card className="backdrop-blur-xl bg-background/60 border-white/10 h-full">
+            <Card className="backdrop-blur-xl bg-background/60 border-white/10 w-full flex flex-col">
               <CardHeader>
                 <CardTitle>Input ESG Metrics</CardTitle>
               </CardHeader>
@@ -142,7 +143,6 @@ const Predictor = () => {
                     step={1}
                     className="w-full"
                   />
-                  <Progress value={formData.environment} className="h-2" />
                 </div>
 
                 {/* Social Score */}
@@ -162,7 +162,6 @@ const Predictor = () => {
                     step={1}
                     className="w-full"
                   />
-                  <Progress value={formData.social} className="h-2" />
                 </div>
 
                 {/* Governance Score */}
@@ -182,7 +181,6 @@ const Predictor = () => {
                     step={1}
                     className="w-full"
                   />
-                  <Progress value={formData.governance} className="h-2" />
                 </div>
 
                 <Button
@@ -202,12 +200,13 @@ const Predictor = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
+            className="flex"
           >
-            <Card className="backdrop-blur-xl bg-background/60 border-white/10 h-full">
+            <Card className="backdrop-blur-xl bg-background/60 border-white/10 w-full flex flex-col">
               <CardHeader>
                 <CardTitle>Prediction Results</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 flex flex-col">
                 {prediction !== null ? (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
