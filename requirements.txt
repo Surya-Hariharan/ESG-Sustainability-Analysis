@@ -48,6 +48,20 @@ optuna>=3.4.0
 redis>=5.0.0
 python-redis>=4.6.0
 
+# Agentic AI & LLMs
+openai>=1.10.0
+anthropic>=0.18.0
+langchain>=0.1.0
+langchain-openai>=0.0.5
+
+# News APIs
+aiohttp>=3.9.0
+beautifulsoup4>=4.12.0
+
+# Additional ML/AI
+transformers>=4.36.0
+sentencepiece>=0.1.99
+
 # Rate limiting
 slowapi>=0.1.9
 
