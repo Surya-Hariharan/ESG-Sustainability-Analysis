@@ -1,7 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Navigation from './components/Navigation';
+import Layout from './components/Layout';
 import { Spinner } from './components/ui/spinner';
 import './App.css';
 
@@ -40,23 +40,20 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <div className="flex flex-col min-h-screen bg-background text-foreground">
-          <Navigation />
-          <main className="flex-1">
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/companies" element={<Companies />} />
-                <Route path="/sectors" element={<Sectors />} />
-                <Route path="/controversies" element={<Controversies />} />
-                <Route path="/predictor" element={<Predictor />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="/about" element={<About />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </main>
-        </div>
+        <Layout>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/companies" element={<Companies />} />
+              <Route path="/sectors" element={<Sectors />} />
+              <Route path="/controversies" element={<Controversies />} />
+              <Route path="/predictor" element={<Predictor />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/about" element={<About />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </Layout>
       </Router>
     </QueryClientProvider>
   );

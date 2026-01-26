@@ -57,9 +57,9 @@ const Index = () => {
                 delay={150}
                 animateBy="words"
                 direction="top"
-                className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-purple-500 to-secondary bg-clip-text text-transparent"
+                className="text-6xl md:text-8xl font-extrabold mb-10 bg-gradient-to-r from-white via-purple-300 to-cyan-200 bg-clip-text text-transparent tracking-tight leading-tight"
               />
-              <div className="text-muted-foreground mb-8 max-w-3xl mx-auto min-h-[120px] flex items-center justify-center">
+              <div className="mb-12 max-w-5xl mx-auto min-h-[160px] flex items-center justify-center">
                 <TextType 
                   text={[
                     "Unlock powerful insights into corporate sustainability performance",
@@ -106,10 +106,10 @@ const Index = () => {
                 >
                   <Card className="backdrop-blur-xl bg-background/60 border-white/10">
                     <CardContent className="p-6 text-center">
-                      <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
+                      <div className="text-4xl md:text-5xl font-extrabold text-white mb-3">
                         {stat.value}
                       </div>
-                      <div className="text-sm text-muted-foreground">{stat.label}</div>
+                      <div className="text-base font-semibold text-white/80">{stat.label}</div>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -128,14 +128,14 @@ const Index = () => {
               viewport={{ once: true }}
               className="text-center mb-16"
             >
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              <h2 className="text-5xl md:text-6xl font-extrabold mb-6 text-white">
                 Powerful Features for
-                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
                   {' '}
                   Sustainable Insights
                 </span>
               </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-2xl font-semibold text-white/80 max-w-3xl mx-auto">
                 Everything you need to make informed decisions about corporate sustainability
               </p>
             </motion.div>
@@ -159,8 +159,8 @@ const Index = () => {
                           <feature.icon className="h-6 w-6" />
                         </div>
                         <div className="flex-1 flex flex-col">
-                          <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                          <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+                          <h3 className="text-2xl font-bold mb-3 text-white">{feature.title}</h3>
+                          <p className="text-lg font-medium text-white/80 leading-relaxed">{feature.description}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -194,7 +194,7 @@ const Index = () => {
                       transition={{ duration: 0.5, delay: 0.2 }}
                       viewport={{ once: true }}
                     >
-                      <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                      <h2 className="text-5xl md:text-6xl font-extrabold mb-8 text-white">
                         Ready to Transform Your ESG Analysis?
                       </h2>
                     </motion.div>
@@ -204,7 +204,7 @@ const Index = () => {
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.3 }}
                       viewport={{ once: true }}
-                      className="text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed"
+                      className="text-2xl font-semibold text-white/90 mb-12 leading-relaxed"
                     >
                       Start exploring comprehensive sustainability data and AI-powered insights today
                     </motion.p>
@@ -250,7 +250,6 @@ const Index = () => {
         <Footer />
       </div>
     );
-  };
 };
 
 export default Index;

@@ -1,14 +1,23 @@
 .text-type {
   display: inline-block;
   white-space: pre-wrap;
-  font-weight: 700;
-  font-size: 1.5rem;
-  line-height: 1.4;
+  font-weight: 800;
+  font-size: 2rem;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.95);
+  text-align: center;
+  letter-spacing: -0.02em;
 }
 
 @media (min-width: 768px) {
   .text-type {
-    font-size: 1.875rem;
+    font-size: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-type {
+    font-size: 2.75rem;
   }
 }
 
@@ -16,7 +25,8 @@
   margin-left: 0.25rem;
   display: inline-block;
   opacity: 1;
-  font-weight: 700;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .text-type__cursor--hidden {
