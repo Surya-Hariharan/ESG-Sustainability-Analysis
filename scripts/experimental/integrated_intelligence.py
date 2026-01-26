@@ -8,8 +8,8 @@ from typing import Dict, List, Any
 from datetime import datetime
 import json
 
-from news_api import NewsInsightsGenerator, NewsAPIClient
-from agentic_pipeline import AgenticPipeline, AgentRole
+from .news_api import NewsInsightsGenerator, NewsAPIClient
+from .agentic_pipeline import AgenticPipeline, AgentRole
 
 
 class IntegratedESGIntelligence:

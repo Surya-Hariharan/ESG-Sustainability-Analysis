@@ -45,11 +45,16 @@ A production-ready, full-stack ESG (Environmental, Social, Governance) analytics
 │   │   ├── pages/                # Route pages
 │   │   └── lib/                  # Utilities
 │   └── package.json
-├── scripts/
-│   ├── mlflow_config.py          # Experiment tracking
-│   ├── validate_model.py         # Model validation
-│   ├── train_pipeline.py         # Training automation
-│   └── load_db.py                # Data loading
+├── scripts/                      # ML & data processing scripts
+│   ├── train_pipeline.py         # Training automation with preprocessing
+│   ├── validate_model.py         # Model validation & metrics
+│   ├── predict.py                # Prediction script
+│   ├── preprocessing.py          # Data preprocessing utilities
+│   ├── load_db.py                # Database data loading
+│   ├── generate_reports.py       # Report generation
+│   ├── mlflow_config.py          # Experiment tracking setup
+│   ├── config.py                 # Script configurations
+│   └── experimental/             # Experimental features (PyTorch, AI agents)
 ├── notebooks/                    # Jupyter analysis notebooks
 │   ├── 01_data_cleaning.ipynb
 │   ├── 02_eda_visualization.ipynb
