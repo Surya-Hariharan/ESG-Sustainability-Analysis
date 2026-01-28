@@ -35,6 +35,7 @@ requests>=2.31.0
 
 # ML/EDA
 scikit-learn>=1.2.2
+imbalanced-learn>=0.11.0
 
 # PyTorch for advanced ML
 torch>=2.1.0
@@ -43,6 +44,9 @@ tensorboard>=2.15.0
 
 # Hyperparameter optimization
 optuna>=3.4.0
+
+# HTTP client for async requests
+httpx>=0.25.0
 
 # Performance & Caching
 redis>=5.0.0

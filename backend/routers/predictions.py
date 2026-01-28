@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field, validator
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 import torch
+import torch.nn as nn
 import numpy as np
 import joblib
 from pathlib import Path
@@ -11,6 +12,22 @@ import json
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/predict", tags=["Predictions"])
 
+class ESGRiskClassifier(nn.Module):
+    def __init__(self, input_dim, hidden_dims, num_classes, dropout=0.5):
+        super(ESGRiskClassifier, self).__init__()
+        layers = []
+        prev_dim = input_dim
+        for hidden_dim in hidden_dims:
+            layers.append(nn.Linear(prev_dim, hidden_dim))
+            layers.append(nn.BatchNorm1d(hidden_dim))
+            layers.append(nn.ReLU())
+            layers.append(nn.Dropout(dropout))
+            prev_dim = hidden_dim
+        layers.append(nn.Linear(prev_dim, num_classes))
+        self.network = nn.Sequential(*layers)
+    
+    def forward(self, x):
+        return self.network(x)
 
 class ESGPredictionRequest(BaseModel):
     environment_risk_score: float = Field(..., ge=0.0, le=100.0)
@@ -53,6 +70,8 @@ class ModelService:
     _scaler = None
     _metadata = None
     _device = None
+    _feature_columns = []
+    _label_mapping = {}
     _classes = ['Low', 'Medium', 'High']
     
     def __new__(cls):
@@ -63,41 +82,47 @@ class ModelService:
     
     def _load_model(self):
         try:
-            from scripts.advanced_model import ESGRiskModel
+            model_path = Path('models/esg_risk_model.pt')
+            scaler_path = Path('models/scaler.pkl')
+            metadata_path = Path('models/model_metadata.json')
             
-            model_dir = Path('models/advanced_model')
-            model_path = model_dir / 'best_model.pth'
-            scaler_path = model_dir / 'scaler.pkl'
-            metadata_path = model_dir / 'model_metadata.json'
-            
-            self._device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            self._device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
             
             if model_path.exists():
                 checkpoint = torch.load(model_path, map_location=self._device)
-                self._model = ESGRiskModel(
-                    input_dim=5,
-                    hidden_dims=(128, 256, 128),
-                    projection_dim=64,
-                    num_classes=3,
-                    dropout=0.3
+                
+                arch = checkpoint.get('model_architecture', {})
+                self._model = ESGRiskClassifier(
+                    input_dim=arch.get('input_dim', 31),
+                    hidden_dims=arch.get('hidden_dims', [512, 256, 128]),
+                    num_classes=arch.get('num_classes', 3),
+                    dropout=arch.get('dropout', 0.5)
                 )
                 self._model.load_state_dict(checkpoint['model_state_dict'])
                 self._model.to(self._device)
                 self._model.eval()
-                logger.info(f"✅ Loaded PyTorch model from {model_path}")
+                
+                self._feature_columns = checkpoint.get('feature_columns', [])
+                self._label_mapping = checkpoint.get('label_mapping', {})
+                self._metadata = checkpoint
+                
+                logger.info(f"✅ Loaded PyTorch model with {len(self._feature_columns)} features")
             else:
-                fallback_path = Path('models/esg_risk_model.joblib')
-                if fallback_path.exists():
-                    self._model = joblib.load(fallback_path)
-                    logger.info(f"✅ Loaded scikit-learn model from {fallback_path}")
-                else:
-                    raise FileNotFoundError("No model found")
+                logger.warning("⚠️  Model not found. Please train the model (notebook 03)")
+                self._model = None
             
             if scaler_path.exists():
                 self._scaler = joblib.load(scaler_path)
-                logger.info(f"✅ Loaded scaler from {scaler_path}")
+                logger.info(f"✅ Loaded scaler")
             
             if metadata_path.exists():
+                with open(metadata_path, 'r') as f:
+                    meta = json.load(f)
+                    logger.info(f"✅ Model accuracy: {meta.get('test_accuracy', 'N/A')}")
+        except Exception as e:
+            logger.error(f"❌ Error loading model: {str(e)}")
+            self._model = None
+            self._scaler = None
                 with open(metadata_path, 'r') as f:
                     self._metadata = json.load(f)
                 logger.info("✅ Loaded model metadata")
