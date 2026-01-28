@@ -1,6 +1,6 @@
 {
   "model_type": "ESGRiskClassifier",
-  "input_features": 50,
+  "input_features": 31,
   "num_classes": 3,
   "class_names": [
     "Low",
@@ -10,13 +10,13 @@
   "training_samples": 351,
   "validation_samples": 76,
   "test_samples": 76,
-  "test_accuracy": 1.0,
-  "test_f1_score": 1.0,
+  "test_accuracy": 0.7236842105263158,
+  "test_f1_score": 0.7261356223531483,
   "best_hyperparameters": {
     "batch_size": 32,
-    "learning_rate": 0.001,
-    "weight_decay": 1e-05,
-    "num_epochs": 100
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0005,
+    "num_epochs": 150
   },
   "feature_columns": [
     "Full Time Employees",
@@ -35,14 +35,7 @@
     "mv_mahalanobis",
     "mv_outlier_flag",
     "data_confidence",
-    "ESG_Component_Balance",
-    "ESG_Max_Component",
-    "ESG_Min_Component",
     "Log_Employees",
-    "ESG_Risk_Above_Average",
-    "Sector_Risk_Average",
-    "ESG_vs_Sector_Average",
-    "High_Risk_Percentile",
     "Sector_Encoded",
     "Industry_Encoded",
     "Controversy Level_High Controversy Level",
@@ -52,23 +45,11 @@
     "Controversy Level_Severe Controversy Level",
     "Controversy Level_Significant Controversy Level",
     "Controversy Level_nan",
-    "ESG Risk Percentile_Encoded",
-    "ESG Risk Level_High",
-    "ESG Risk Level_Low",
-    "ESG Risk Level_Medium",
-    "ESG Risk Level_Negligible",
-    "ESG Risk Level_Severe",
-    "ESG Risk Level_nan",
     "Employee_Size_Category_Small",
     "Employee_Size_Category_Medium",
     "Employee_Size_Category_Large",
     "Employee_Size_Category_Enterprise",
-    "Employee_Size_Category_nan",
-    "ESG_Risk_Category_Low",
-    "ESG_Risk_Category_Medium",
-    "ESG_Risk_Category_High",
-    "ESG_Risk_Category_Severe",
-    "ESG_Risk_Category_nan"
+    "Employee_Size_Category_nan"
   ],
   "label_mapping": {
     "Low": 0,
@@ -78,13 +59,12 @@
     "Severe": 2
   },
   "architecture": {
-    "input_dim": 50,
+    "input_dim": 31,
     "hidden_dims": [
-      256,
       128,
       64
     ],
     "num_classes": 3,
-    "dropout": 0.3
+    "dropout": 0.5
   }
 }
