@@ -1,93 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, Building2, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Search, Filter, Building2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import PageLayout from '@/components/PageLayout';
 import BlurText from '@/components/BlurText';
+import { api, type Company } from '@/services/api';
+import { Spinner } from '@/components/ui/spinner';
 
 const Companies = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock company data with ESG scores
-  const companies = [
-    {
-      id: 1,
-      name: 'Tesla Inc.',
-      sector: 'Automotive',
-      esgScore: 87,
-      trend: 'up',
-      environment: 92,
-      social: 78,
-      governance: 91,
-      riskLevel: 'Low',
-    },
-    {
-      id: 2,
-      name: 'Apple Inc.',
-      sector: 'Technology',
-      esgScore: 91,
-      trend: 'up',
-      environment: 88,
-      social: 95,
-      governance: 90,
-      riskLevel: 'Low',
-    },
-    {
-      id: 3,
-      name: 'Microsoft Corporation',
-      sector: 'Technology',
-      esgScore: 89,
-      trend: 'stable',
-      environment: 90,
-      social: 87,
-      governance: 90,
-      riskLevel: 'Low',
-    },
-    {
-      id: 4,
-      name: 'ExxonMobil',
-      sector: 'Energy',
-      esgScore: 54,
-      trend: 'down',
-      environment: 45,
-      social: 62,
-      governance: 56,
-      riskLevel: 'High',
-    },
-    {
-      id: 5,
-      name: 'Johnson & Johnson',
-      sector: 'Healthcare',
-      esgScore: 82,
-      trend: 'up',
-      environment: 79,
-      social: 88,
-      governance: 79,
-      riskLevel: 'Medium',
-    },
-    {
-      id: 6,
-      name: 'Amazon.com Inc.',
-      sector: 'E-commerce',
-      esgScore: 75,
-      trend: 'up',
-      environment: 71,
-      social: 74,
-      governance: 80,
-      riskLevel: 'Medium',
-    },
-  ];
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await api.getTopCompanies(100);
+        setCompanies(data);
+      } catch (err: any) {
+        setError(err.message || 'Failed to load companies');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
 
   const filteredCompanies = companies.filter((company) =>
-    company.name.toLowerCase().includes(searchTerm.toLowerCase())
+    company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    company.symbol.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'from-[#9EFFCD] to-[#6BFFEA]';
-    if (score >= 60) return 'from-[#FFD700] to-[#FFA500]';
+    // Lower ESG risk score is better (0 = best, 100 = worst)
+    if (score <= 20) return 'from-[#9EFFCD] to-[#6BFFEA]';
+    if (score <= 40) return 'from-[#FFD700] to-[#FFA500]';
     return 'from-[#FF6B6B] to-[#FF4757]';
   };
 
@@ -98,12 +52,6 @@ const Companies = () => {
       High: 'bg-[#FF6B6B]/20 text-[#FF6B6B] border-[#FF6B6B]/30',
     };
     return variants[risk] || variants.Low;
-  };
-
-  const getTrendIcon = (trend: string) => {
-    if (trend === 'up') return <TrendingUp className="h-4 w-4 text-[#9EFFCD]" />;
-    if (trend === 'down') return <TrendingDown className="h-4 w-4 text-[#FF6B6B]" />;
-    return <Minus className="h-4 w-4 text-muted-foreground" />;
   };
 
   return (
@@ -156,78 +104,89 @@ const Companies = () => {
           </Card>
         </motion.div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <Spinner className="h-12 w-12" />
+            <span className="ml-4 text-lg">Loading companies...</span>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <Card className="backdrop-blur-xl bg-background/60 border-red-500/30 p-8 text-center">
+            <p className="text-red-400 mb-4">Error: {error}</p>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </Card>
+        )}
+
         {/* Company Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCompanies.map((company, index) => (
-            <motion.div
-              key={company.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <Card className="backdrop-blur-xl bg-background/60 border-white/10 hover:bg-background/80 transition-all duration-300 group h-full">
-                <CardHeader>
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-gradient-to-r from-[#9429FF] to-[#9EFFCD]">
-                        <Building2 className="h-5 w-5 text-white" />
+        {!loading && !error && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCompanies.map((company, index) => {
+              const score = company.total_esg_risk_score || 0;
+              const riskLevel = score <= 20 ? 'Low' : score <= 40 ? 'Medium' : 'High';
+              return (
+                <motion.div
+                  key={company.symbol}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.05 }}
+                >
+                  <Card className="backdrop-blur-xl bg-background/60 border-white/10 hover:bg-background/80 transition-all duration-300 group h-full">
+                    <CardHeader>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-gradient-to-r from-[#9429FF] to-[#9EFFCD]">
+                            <Building2 className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">{company.name}</CardTitle>
+                            <p className="text-sm text-muted-foreground">{company.sector}</p>
+                          </div>
+                        </div>
+                        <span className="text-xs text-muted-foreground font-mono">{company.symbol}</span>
                       </div>
-                      <div>
-                        <CardTitle className="text-lg">{company.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{company.sector}</p>
+                      <Badge className={getRiskBadge(riskLevel)} variant="outline">
+                        {riskLevel} Risk
+                      </Badge>
+                    </CardHeader>
+                    <CardContent>
+                      {/* Overall ESG Score */}
+                      <div className="mb-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">ESG Risk Score</span>
+                          <span className={`text-2xl font-bold bg-gradient-to-r ${getScoreColor(score)} bg-clip-text text-transparent`}>
+                            {score.toFixed(1)}
+                          </span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(100, score)}%` }}
+                            transition={{ duration: 1, delay: 0.5 + index * 0.05 }}
+                            className={`h-full bg-gradient-to-r ${getScoreColor(score)}`}
+                          />
+                        </div>
                       </div>
-                    </div>
-                    {getTrendIcon(company.trend)}
-                  </div>
-                  <Badge className={getRiskBadge(company.riskLevel)} variant="outline">
-                    {company.riskLevel} Risk
-                  </Badge>
-                </CardHeader>
-                <CardContent>
-                  {/* Overall ESG Score */}
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">ESG Score</span>
-                      <span className={`text-2xl font-bold bg-gradient-to-r ${getScoreColor(company.esgScore)} bg-clip-text text-transparent`}>
-                        {company.esgScore}
-                      </span>
-                    </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${company.esgScore}%` }}
-                        transition={{ duration: 1, delay: 0.5 + index * 0.1 }}
-                        className={`h-full bg-gradient-to-r ${getScoreColor(company.esgScore)}`}
-                      />
-                    </div>
-                  </div>
 
-                  {/* Individual Scores */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Environmental</span>
-                      <span className="font-medium">{company.environment}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Social</span>
-                      <span className="font-medium">{company.social}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Governance</span>
-                      <span className="font-medium">{company.governance}</span>
-                    </div>
-                  </div>
+                      {/* Sector Info */}
+                      <div className="pt-4 border-t border-white/10">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Sector</span>
+                          <span className="font-medium text-[#9EFFCD]">{company.sector}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
 
-                  <Button className="w-full mt-4 bg-gradient-to-r from-[#9429FF] to-[#9EFFCD] hover:opacity-90">
-                    View Details
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        {filteredCompanies.length === 0 && (
+        {/* No Results */}
+        {!loading && !error && filteredCompanies.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

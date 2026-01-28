@@ -11,7 +11,6 @@ const Companies = lazy(() => import('./pages/Companies'));
 const Sectors = lazy(() => import('./pages/Sectors'));
 const Controversies = lazy(() => import('./pages/Controversies'));
 const Predictor = lazy(() => import('./pages/Predictor'));
-const Reports = lazy(() => import('./pages/Reports'));
 const About = lazy(() => import('./pages/About'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
@@ -48,7 +47,6 @@ function App() {
               <Route path="/sectors" element={<Sectors />} />
               <Route path="/controversies" element={<Controversies />} />
               <Route path="/predictor" element={<Predictor />} />
-              <Route path="/reports" element={<Reports />} />
               <Route path="/about" element={<About />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

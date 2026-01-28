@@ -24,7 +24,6 @@ const Navigation = () => {
     { path: '/sectors', label: 'Sectors' },
     { path: '/predictor', label: 'Predictor' },
     { path: '/controversies', label: 'Controversies' },
-    { path: '/reports', label: 'Reports' },
     { path: '/about', label: 'About' },
   ];
 
