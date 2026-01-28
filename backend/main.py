@@ -20,7 +20,7 @@ from backend.middleware.security import (
     XSSProtectionMiddleware,
     setup_rate_limiting
 )
-from backend.routers import analytics, predictions
+from backend.routers import analytics, predictions, agents
 from backend.services.database import db_service
 from backend.services.cache import cache_service
 
@@ -71,6 +71,7 @@ app.add_middleware(XSSProtectionMiddleware)
 # Include routers
 app.include_router(analytics.router, prefix="/api")
 app.include_router(predictions.router, prefix="/api")
+app.include_router(agents.router)
 
 
 @app.on_event("startup")
