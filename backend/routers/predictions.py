@@ -123,50 +123,77 @@ class ModelService:
             logger.error(f"❌ Error loading model: {str(e)}")
             self._model = None
             self._scaler = None
-                with open(metadata_path, 'r') as f:
-                    self._metadata = json.load(f)
-                logger.info("✅ Loaded model metadata")
-            
-        except Exception as e:
-            logger.error(f"❌ Failed to load model: {e}")
-            raise
     
     def predict_single(self, request: ESGPredictionRequest) -> ESGPredictionResponse:
+        if self._model is None:
+            raise HTTPException(
+                status_code=503,
+                detail="Model not available. Please train the model first."
+            )
+        
         try:
-            features = np.array([[
-                request.environment_risk_score,
-                request.social_risk_score,
-                request.governance_risk_score,
-                request.controversy_score,
-                float(request.full_time_employees)
-            ]])
+            # For new PyTorch model with 31 features
+            if len(self._feature_columns) > 0:
+                # Build feature dict matching all 31 columns
+                feature_dict = {
+                    'environment_risk_score': request.environment_risk_score,
+                    'social_risk_score': request.social_risk_score,
+                    'governance_risk_score': request.governance_risk_score,
+                    'controversy_score': request.controversy_score,
+                    'full_time_employees': float(request.full_time_employees)
+                }
+                # Fill missing features with 0 (or fetch from DB in production)
+                feature_values = [feature_dict.get(col, 0) for col in self._feature_columns]
+            else:
+                # Fallback for old 5-feature model
+                feature_values = [
+                    request.environment_risk_score,
+                    request.social_risk_score,
+                    request.governance_risk_score,
+                    request.controversy_score,
+                    float(request.full_time_employees)
+                ]
+            
+            features = np.array([feature_values], dtype=np.float32)
             
             if self._scaler:
                 features = self._scaler.transform(features)
             
-            if isinstance(self._model, torch.nn.Module):
-                features_tensor = torch.FloatTensor(features).to(self._device)
-                with torch.no_grad():
-                    logits = self._model(features_tensor)
-                    probabilities = torch.softmax(logits, dim=1).cpu().numpy()[0]
-                    prediction = np.argmax(probabilities)
-            else:
-                probabilities = self._model.predict_proba(features)[0]
+            features_tensor = torch.FloatTensor(features).to(self._device)
+            with torch.no_grad():
+                logits = self._model(features_tensor)
+                probabilities = torch.softmax(logits, dim=1).cpu().numpy()[0]
                 prediction = np.argmax(probabilities)
             
-            risk_level = self._classes[prediction]
-            confidence = float(probabilities[prediction])
+            # Map prediction to labe[str, Any]:
+        if self._model is None:
+            return {
+                "status": "not_loaded",
+                "message": "Model not available. Please train the model using notebook 03."
+            }
+        
+        return {
+            "status": "loaded",
+            "type": "PyTorch",
+            "device": str(self._device) if self._device else "cpu",
+            "classes": list(self._label_mapping.keys()) if self._label_mapping else self._classes,
+            "feature_count": len(self._feature_columns),
+            "features": self._feature_columns[:10] if len(self._feature_columns) > 10 else self._feature_columns,
+            "architecture": self._metadata.get('model_architecture', {}) if self._metadata else {},
+            "training_date": self._metadata.get('training_date', 'Unknown') if self._metadata else 'Unknown',
+            "test_accuracy": self._metadata.get('test_accuracy', 'N/A') if self._metadata else 'N/A'ties))
+            }
             
             return ESGPredictionResponse(
                 risk_level=risk_level,
                 confidence=confidence,
-                probabilities={
-                    cls: float(prob) for cls, prob in zip(self._classes, probabilities)
-                }
+                probabilities=prob_dict
             )
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Prediction error: {e}")
-            raise HTTPException(status_code=500, detail="Prediction failed")
+            raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
     
     def predict_batch(self, requests: List[ESGPredictionRequest]) -> BatchPredictionResponse:
         predictions = [self.predict_single(req) for req in requests]
