@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Factory, Zap, Heart, Building2, Truck, Cpu, Award,
-  Grid3X3, BarChart3, Target, ChevronRight, Sparkles, ArrowUpRight,
+  Grid3X3, BarChart3, ChevronRight, Sparkles, ArrowUpRight,
   ArrowDownRight, Filter
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,12 +10,11 @@ import PageLayout from '@/components/PageLayout';
 import BlurText from '@/components/BlurText';
 import { Button } from '@/components/ui/button';
 
-type ViewMode = 'grid' | 'comparison' | 'radial';
+type ViewMode = 'grid' | 'comparison';
 type SortBy = 'score' | 'companies' | 'trend' | 'name';
 
 const Sectors = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [hoveredSector, setHoveredSector] = useState<number | null>(null);
   const [flippedCards, setFlippedCards] = useState<Set<number>>(new Set());
   const [sortBy, setSortBy] = useState<SortBy>('score');
 
@@ -211,15 +210,6 @@ const Sectors = () => {
               <BarChart3 className="h-4 w-4 mr-2" />
               Comparison
             </Button>
-            <Button
-              variant={viewMode === 'radial' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('radial')}
-              className={viewMode === 'radial' ? 'bg-gradient-to-r from-[#9429FF] to-[#B76EFF]' : ''}
-            >
-              <Target className="h-4 w-4 mr-2" />
-              Radial
-            </Button>
           </div>
 
           <div className="flex items-center gap-2">
@@ -244,7 +234,7 @@ const Sectors = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mb-12"
         >
-          <Card className="backdrop-blur-xl bg-background/60 border-white/10 overflow-hidden">
+          <Card className="backdrop-blur-xl bg-background/60 border-white/10">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-lg bg-gradient-to-r from-[#FFD700] to-[#FFA500]">
@@ -262,21 +252,18 @@ const Sectors = () => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-                    className="relative p-6 rounded-xl bg-gradient-to-br from-background/40 to-background/20 hover:from-background/60 hover:to-background/40 transition-all duration-300 border border-white/5 group overflow-hidden"
+                    className="p-6 rounded-xl bg-gradient-to-br from-background/40 to-background/20 hover:from-background/60 hover:to-background/40 transition-all duration-300 border border-white/5"
                   >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#9429FF]/20 to-transparent rounded-full blur-3xl group-hover:scale-150 transition-transform duration-500" />
-                    <div className="relative z-10">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r ${getScoreGradient(company.score)} text-white font-bold text-lg shadow-lg`}>
-                          {index + 1}
-                        </div>
-                        <div className={`text-3xl font-bold bg-gradient-to-r ${getScoreGradient(company.score)} bg-clip-text text-transparent`}>
-                          {company.score}
-                        </div>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className={`flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r ${getScoreGradient(company.score)} text-white font-bold text-lg shadow-lg`}>
+                        {index + 1}
                       </div>
-                      <h3 className="font-semibold text-lg mb-1">{company.name}</h3>
-                      <p className="text-sm text-muted-foreground">{company.sector}</p>
+                      <div className={`text-3xl font-bold bg-gradient-to-r ${getScoreGradient(company.score)} bg-clip-text text-transparent`}>
+                        {company.score}
+                      </div>
                     </div>
+                    <h3 className="font-semibold text-lg mb-1">{company.name}</h3>
+                    <p className="text-sm text-muted-foreground">{company.sector}</p>
                   </motion.div>
                 ))}
               </div>
@@ -445,7 +432,6 @@ const Sectors = () => {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: index * 0.05 }}
-                        className="group"
                       >
                         <div className="flex items-center gap-4 mb-3">
                           <div className={`p-2 rounded-lg bg-gradient-to-r ${sector.color} shrink-0`}>
@@ -487,82 +473,6 @@ const Sectors = () => {
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
-          )}
-
-          {viewMode === 'radial' && (
-            <motion.div
-              key="radial"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.5 }}
-              className="flex justify-center items-center min-h-[700px] py-12"
-            >
-              <div className="relative w-full max-w-5xl aspect-square">
-                {sortedSectors.map((sector, index) => {
-                  const angle = (index / sortedSectors.length) * 2 * Math.PI - Math.PI / 2;
-                  const radius = 42; // increased from 35 for better spacing
-                  const x = 50 + radius * Math.cos(angle);
-                  const y = 50 + radius * Math.sin(angle);
-
-                  return (
-                    <motion.div
-                      key={sector.id}
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      className="absolute"
-                      style={{
-                        left: `${x}%`,
-                        top: `${y}%`,
-                        transform: 'translate(-50%, -50%)',
-                      }}
-                    >
-                      <motion.div
-                        whileHover={{ scale: 1.15, zIndex: 10 }}
-                        transition={{ type: 'spring', stiffness: 300 }}
-                        className="relative"
-                      >
-                        <Card className="backdrop-blur-xl bg-background/80 border-white/10 w-44 hover:border-white/30 hover:shadow-2xl transition-all duration-300">
-                          <CardContent className="p-4">
-                            <div className={`p-2.5 rounded-xl bg-gradient-to-r ${sector.color} w-fit mb-2 mx-auto`}>
-                              <sector.icon className="h-5 w-5 text-white" />
-                            </div>
-                            <h3 className="font-semibold text-center mb-2 text-sm">{sector.name}</h3>
-                            <div className={`text-3xl font-bold text-center mb-2 ${getScoreColor(sector.avgScore)}`}>
-                              {sector.avgScore}
-                            </div>
-                            <div className="space-y-1">
-                              {Object.entries(sector.performance).map(([key, value]) => (
-                                <div key={key} className="flex justify-between text-xs">
-                                  <span className="text-muted-foreground capitalize">{key.slice(0, 3)}</span>
-                                  <span className="font-medium">{value}%</span>
-                                </div>
-                              ))}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    </motion.div>
-                  );
-                })}
-
-                {/* Center Circle */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.5 }}
-                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                >
-                  <div className="w-36 h-36 rounded-full bg-gradient-to-br from-[#9429FF] to-[#9EFFCD] flex items-center justify-center shadow-2xl">
-                    <div className="text-center text-white">
-                      <div className="text-4xl font-bold">{sortedSectors.length}</div>
-                      <div className="text-sm opacity-90">Sectors</div>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
             </motion.div>
           )}
         </AnimatePresence>
