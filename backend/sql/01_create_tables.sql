@@ -263,13 +263,16 @@ COMMENT ON TABLE agent_analysis_cache IS
 CREATE OR REPLACE FUNCTION clean_expired_cache()
 RETURNS INTEGER AS $$
 DECLARE
-    deleted_count INTEGER;
+    deleted_count INTEGER := 0;
+    temp_count INTEGER;
 BEGIN
     DELETE FROM news_cache WHERE expires_at < NOW();
-    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    GET DIAGNOSTICS temp_count = ROW_COUNT;
+    deleted_count := deleted_count + temp_count;
     
     DELETE FROM agent_analysis_cache WHERE expires_at < NOW();
-    GET DIAGNOSTICS deleted_count = deleted_count + ROW_COUNT;
+    GET DIAGNOSTICS temp_count = ROW_COUNT;
+    deleted_count := deleted_count + temp_count;
     
     RETURN deleted_count;
 END;

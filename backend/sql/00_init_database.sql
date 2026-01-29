@@ -19,10 +19,11 @@ CREATE DATABASE esg_db
     WITH 
     OWNER = postgres
     ENCODING = 'UTF8'
-    LC_COLLATE = 'en_US.UTF-8'
-    LC_CTYPE = 'en_US.UTF-8'
+    LC_COLLATE = 'C'
+    LC_CTYPE = 'C'
     TABLESPACE = pg_default
-    CONNECTION LIMIT = -1;
+    CONNECTION LIMIT = -1
+    TEMPLATE = template0;
 
 COMMENT ON DATABASE esg_db IS 
 'ESG Sustainability Analysis Platform Database';

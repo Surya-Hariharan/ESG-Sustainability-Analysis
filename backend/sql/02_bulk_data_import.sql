@@ -61,17 +61,34 @@ COPY staging_esg_data(
     controversy_score,
     esg_risk_percentile,
     esg_risk_level
-)
-FROM '/absolute/path/to/data/processed/esg_data_cleaned.csv'
-DELIMITER ',' 
-CSV HEADER
-ENCODING 'UTF8';
+-- Import sample data for testing
+-- Note: Replace with actual CSV import when data file is available
+-- For CSV import, use: \copy staging_esg_data(...) FROM 'path/to/file.csv' CSV HEADER;
 
--- Alternative for Windows paths:
--- FROM 'C:/path/to/data/processed/esg_data_cleaned.csv'
-
--- Alternative using psql \COPY (run from psql client):
--- \COPY staging_esg_data(symbol, name, ...) FROM 'data/processed/esg_data_cleaned.csv' DELIMITER ',' CSV HEADER;
+INSERT INTO staging_esg_data (
+    symbol,
+    company_name,
+    sector,
+    industry,
+    total_esg_risk_score,
+    environment_risk_score,
+    social_risk_score,
+    governance_risk_score,
+    controversy_level,
+    controversy_score,
+    esg_risk_percentile,
+    esg_risk_level
+) VALUES 
+('AAPL', 'Apple Inc.', 'Technology', 'Consumer Electronics', 23.5, 8.2, 7.1, 8.2, 2, 15.3, 25.4, 'Low'),
+('MSFT', 'Microsoft Corporation', 'Technology', 'Software', 21.8, 7.5, 6.9, 7.4, 1, 12.1, 22.1, 'Low'),
+('GOOGL', 'Alphabet Inc.', 'Technology', 'Internet Services', 28.9, 9.8, 8.7, 10.4, 3, 22.5, 31.2, 'Medium'),
+('TSLA', 'Tesla Inc.', 'Consumer Cyclical', 'Auto Manufacturers', 45.6, 15.2, 14.8, 15.6, 4, 38.9, 65.8, 'High'),
+('JPM', 'JPMorgan Chase & Co.', 'Financial Services', 'Banks', 35.7, 11.8, 12.1, 11.8, 3, 28.4, 42.3, 'Medium'),
+('XOM', 'Exxon Mobil Corporation', 'Energy', 'Oil & Gas', 58.2, 28.5, 15.7, 14.0, 5, 52.1, 89.3, 'High'),
+('JNJ', 'Johnson & Johnson', 'Healthcare', 'Pharmaceuticals', 19.4, 6.8, 5.9, 6.7, 2, 11.8, 18.9, 'Low'),
+('WMT', 'Walmart Inc.', 'Consumer Defensive', 'Discount Stores', 31.2, 12.4, 9.8, 9.0, 3, 24.7, 38.6, 'Medium'),
+('V', 'Visa Inc.', 'Financial Services', 'Credit Services', 16.9, 5.2, 5.8, 5.9, 1, 8.4, 14.2, 'Low'),
+('NVDA', 'NVIDIA Corporation', 'Technology', 'Semiconductors', 27.3, 9.1, 8.9, 9.3, 2, 19.8, 29.7, 'Medium');
 
 -- ==============================================================================
 -- Step 3: Data Cleaning and Validation
