@@ -1,0 +1,86 @@
+{
+  "model_type": "ESGRiskClassifier",
+  "input_features": 31,
+  "num_classes": 3,
+  "class_names": [
+    "Low",
+    "Medium",
+    "High"
+  ],
+  "training_samples": 351,
+  "validation_samples": 76,
+  "test_samples": 76,
+  "test_accuracy": 0.868421052631579,
+  "test_f1_score": 0.8669302566761733,
+  "best_hyperparameters": {
+    "batch_size": 64,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0005,
+    "num_epochs": 150
+  },
+  "feature_columns": [
+    "Full Time Employees",
+    "Total ESG Risk score",
+    "Environment Risk Score",
+    "Governance Risk Score",
+    "Social Risk Score",
+    "Controversy Score",
+    "missing_env_flag",
+    "missing_social_flag",
+    "missing_gov_flag",
+    "imputed_fraction",
+    "univariate_outlier_count",
+    "mv_isolation_forest_score",
+    "mv_lof_score",
+    "mv_mahalanobis",
+    "mv_outlier_flag",
+    "data_confidence",
+    "Log_Employees",
+    "Sector_Encoded",
+    "Industry_Encoded",
+    "Controversy Level_High Controversy Level",
+    "Controversy Level_Low Controversy Level",
+    "Controversy Level_Moderate Controversy Level",
+    "Controversy Level_None Controversy Level",
+    "Controversy Level_Severe Controversy Level",
+    "Controversy Level_Significant Controversy Level",
+    "Controversy Level_nan",
+    "Employee_Size_Category_Small",
+    "Employee_Size_Category_Medium",
+    "Employee_Size_Category_Large",
+    "Employee_Size_Category_Enterprise",
+    "Employee_Size_Category_nan"
+  ],
+  "label_mapping": {
+    "Low": 0,
+    "Negligible": 0,
+    "Medium": 1,
+    "High": 2,
+    "Severe": 2
+  },
+  "architecture": {
+    "input_dim": 31,
+    "hidden_dims": [
+      512,
+      256,
+      128
+    ],
+    "num_classes": 3,
+    "dropout": 0.5
+  },
+  "training_improvements": {
+    "scheduler": "OneCycleLR",
+    "label_smoothing": 0.1,
+    "focal_loss_gamma": 2.0,
+    "gradient_clipping": 1.0,
+    "model_checkpointing": true
+  },
+  "training_date": "2026-01-29T08:52:15.409188",
+  "threshold_optimization": {
+    "default_threshold": 0.33,
+    "optimal_threshold_80pct_recall": 0.1,
+    "high_risk_recall_at_optimal": 0.75,
+    "high_risk_precision_at_optimal": 0.375,
+    "recommendation": "Use threshold 0.10 for High risk class in production"
+  }
+}

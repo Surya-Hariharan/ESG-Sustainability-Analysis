@@ -1,18 +1,15 @@
 ESG SUSTAINABILITY DATA PROCESSING METADATA
-Generated on: 2026-01-28 23:39:46
+Generated on: 2026-01-29 08:50:18
 ====================================================
-
 ORIGINAL DATA:
 - Shape: (503, 15)
 - Completeness: 91.8%
 - Missing values: 620
-
 PROCESSED DATA:
 - Shape: (503, 61)
 - Completeness: 100.0%
 - Missing values: 0
 - ML-ready features: 30
-
 PROCESSING STEPS:
 1. ✅ Basic cleaning (duplicates, symbols)
 2. ✅ Employee data standardization
@@ -24,7 +21,6 @@ PROCESSING STEPS:
 8. ✅ Categorical encoding
 9. ✅ Feature scaling/normalization
 10. ✅ Final quality assessment
-
 NEW FEATURES CREATED:
 - ESG_Component_Balance
 - ESG_Max_Component
@@ -36,7 +32,6 @@ NEW FEATURES CREATED:
 - Sector_Risk_Average
 - ESG_vs_Sector_Average
 - High_Risk_Percentile
-
 ENCODED COLUMNS:
 - Sector_Encoded
 - Industry_Encoded
@@ -64,13 +59,11 @@ ENCODED COLUMNS:
 - ESG_Risk_Category_High
 - ESG_Risk_Category_Severe
 - ESG_Risk_Category_nan
-
 IMPUTATION STRATEGIES USED:
 - forward_fill: 5 columns
 - knn_imputation: 5 columns
 - median_mode: 4 columns
 - no_action: 2 columns
-
 READY FOR:
 - Machine Learning model training
 - Statistical analysis
