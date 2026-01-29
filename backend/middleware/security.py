@@ -13,30 +13,24 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 
 
 class SQLInjectionProtectionMiddleware(BaseHTTPMiddleware):
-        r"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE)\b)",
-        r"(--|;|\/\*|\*\/|xp_|sp_|UNION|WAITFOR|DELAY)",
-        # Removed aggressive quote matching which blocks JSON
-        r"(\bOR\b.*=.*|\bAND\b.*=.*)",
-        r"(CHAR\(|CHR\(|ASCII\(|SUBSTRING\()",
+    """
+    Simplified SQL injection protection middleware.
+    Only checks for obvious SQL injection patterns in query parameters.
+    Does NOT check request body to avoid blocking legitimate JSON/API requests.
+    """
+    SQL_INJECTION_PATTERNS = [
+        r"(\bUNION\b.*\bSELECT\b)",  # UNION SELECT attacks
+        r"(\bDROP\b.*\bTABLE\b)",     # DROP TABLE attacks
+        r"(;.*\b(SELECT|DELETE|UPDATE|INSERT)\b)",  # Multiple statements
     ]
     
     async def dispatch(self, request: Request, call_next: Callable):
-        if request.method in ["POST", "PUT", "PATCH"]:
-            body = await request.body()
-            body_str = body.decode('utf-8', errors='ignore')
-            
-            for pattern in self.SQL_INJECTION_PATTERNS:
-                if re.search(pattern, body_str, re.IGNORECASE):
-                    logger.warning(f"SQL injection attempt detected: {request.client.host}")
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Invalid input detected"
-                    )
-        
+        # Only check query parameters, not request body
+        # This prevents false positives on JSON requests
         query_params = str(request.query_params)
         for pattern in self.SQL_INJECTION_PATTERNS:
             if re.search(pattern, query_params, re.IGNORECASE):
-                logger.warning(f"SQL injection in query params: {request.client.host}")
+                logger.warning(f"Potential SQL injection in query params from {request.client.host}")
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Invalid query parameters"
@@ -60,25 +54,28 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 class XSSProtectionMiddleware(BaseHTTPMiddleware):
+    """
+    Simplified XSS protection middleware.
+    Only checks for the most dangerous XSS patterns.
+    Allows normal text content including common words like 'select', 'or', 'and'.
+    """
     XSS_PATTERNS = [
-        r"<script[^>]*>.*?</script>",
-        r"javascript:",
-        r"onerror\s*=",
-        r"onload\s*=",
-        r"onclick\s*=",
-        r"<iframe[^>]*>",
-        r"eval\(",
-        r"alert\(",
+        r"<script[^>]*>",           # Script tags
+        r"javascript:\s*",          # JavaScript protocol
+        r"<iframe[^>]*>",           # Iframe tags
+        r"onerror\s*=\s*['\"]",     # Event handlers with quotes
+        r"onload\s*=\s*['\"]",
     ]
     
     async def dispatch(self, request: Request, call_next: Callable):
+        # Only check POST/PUT/PATCH requests
         if request.method in ["POST", "PUT", "PATCH"]:
             body = await request.body()
             body_str = body.decode('utf-8', errors='ignore')
             
             for pattern in self.XSS_PATTERNS:
                 if re.search(pattern, body_str, re.IGNORECASE):
-                    logger.warning(f"XSS attempt detected: {request.client.host}")
+                    logger.warning(f"Potential XSS attempt from {request.client.host}")
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail="Invalid input detected"

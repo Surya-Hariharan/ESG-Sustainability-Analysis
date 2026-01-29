@@ -21,6 +21,9 @@ const Sectors = () => {
         const data = await api.getSectorAverages();
         setSectors(data);
       } catch (err: any) {
+        // Ignore cancellation errors from React Strict Mode
+        if (err.message && err.message.includes('canceled')) return;
+
         setError(err.message || 'Failed to load sector data');
       } finally {
         setLoading(false);
@@ -131,8 +134,8 @@ const Sectors = () => {
                       <div className="flex items-center justify-between pt-4 border-t border-white/10">
                         <span className="text-sm text-muted-foreground">Risk Level</span>
                         <span className={`text-sm font-semibold ${riskLevel === 'Low' ? 'text-[#9EFFCD]' :
-                            riskLevel === 'Medium' ? 'text-[#FFD700]' :
-                              'text-[#FF6B6B]'
+                          riskLevel === 'Medium' ? 'text-[#FFD700]' :
+                            'text-[#FF6B6B]'
                           }`}>
                           {riskLevel}
                         </span>

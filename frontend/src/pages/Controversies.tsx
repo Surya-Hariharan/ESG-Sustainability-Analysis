@@ -22,6 +22,9 @@ const Controversies = () => {
         const data = await api.getControversies(50); // Min score 50
         setControversies(data);
       } catch (err: any) {
+        // Ignore cancellation errors from React Strict Mode
+        if (err.message && err.message.includes('canceled')) return;
+
         setError(err.message || 'Failed to load controversies');
       } finally {
         setLoading(false);
