@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     DB_USER: str = os.getenv("DB_USER", "postgres")
     DB_PASSWORD: str = os.getenv("DB_PASSWORD", "")
     
+    NEWS_API_KEY: str = os.getenv("NEWS_API_KEY", "")
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    
     REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
     REDIS_PORT: int = int(os.getenv("REDIS_PORT", 6379))
     REDIS_DB: int = int(os.getenv("REDIS_DB", 0))
@@ -35,8 +39,22 @@ class Settings(BaseSettings):
     
     RATE_LIMIT_PER_MINUTE: int = int(os.getenv("RATE_LIMIT_PER_MINUTE", 100))
     
+    NEWS_CACHE_TTL: int = int(os.getenv("NEWS_CACHE_TTL", 3600))
+    AGENT_CACHE_TTL: int = int(os.getenv("AGENT_CACHE_TTL", 1800))
+    
     class Config:
         case_sensitive = True
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+    
+    def validate_api_keys(self) -> dict:
+        """Validate that required API keys are configured"""
+        status = {
+            "news_api": bool(self.NEWS_API_KEY and self.NEWS_API_KEY != "your_newsapi_key_here"),
+            "groq_api": bool(self.GROQ_API_KEY and self.GROQ_API_KEY != "your_groq_api_key_here"),
+            "openai_api": bool(self.OPENAI_API_KEY)
+        }
+        return status
 
 
 settings = Settings()

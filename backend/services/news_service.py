@@ -6,18 +6,25 @@ import httpx
 from functools import lru_cache
 import logging
 import time
+from ..core.config import settings
 
 logger = logging.getLogger(__name__)
 
 class NewsService:
     def __init__(self):
-        self.news_api_key = os.getenv("NEWS_API_KEY")
+        self.news_api_key = settings.NEWS_API_KEY
         self.base_url = "https://newsapi.org/v2"
         self.timeout = 10.0
-        self.cache_ttl = 3600
+        self.cache_ttl = settings.NEWS_CACHE_TTL
         self.last_request_time = 0
         self.min_request_interval = 1.0
         self.max_retries = 3
+        
+        if not self.news_api_key or self.news_api_key == "your_newsapi_key_here":
+            logger.warning(
+                "⚠️  NEWS_API_KEY not configured! "
+                "Get your key from https://newsapi.org/account and add to .env"
+            )
         
     async def fetch_company_news(
         self, 

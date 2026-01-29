@@ -1,12 +1,16 @@
 -- ==============================================================================
--- ESG Companies Database Schema - Table Definitions and Constraints
+-- ESG Sustainability Analysis - Database Schema
 -- ==============================================================================
--- Purpose: Create and manage the esg_companies table with proper indexes,
---          constraints, and triggers for ESG sustainability data analysis
---
--- Created: 2024
--- Last Modified: 2026-01-26
+-- Purpose: Complete database schema for ESG risk analysis platform
+-- Version: 2.0
+-- Created: 2026-01-29
 -- ==============================================================================
+
+-- Drop existing tables if recreating
+DROP TABLE IF EXISTS agent_analysis_cache CASCADE;
+DROP TABLE IF EXISTS news_cache CASCADE;
+DROP TABLE IF EXISTS model_predictions CASCADE;
+DROP TABLE IF EXISTS esg_companies CASCADE;
 
 BEGIN;
 
@@ -180,15 +184,169 @@ COMMENT ON INDEX idx_esg_sector_score IS
 'Composite index for sector benchmarking queries';
 
 -- ==============================================================================
--- Grant Permissions (if needed for specific roles)
+-- Table: model_predictions
+-- ==============================================================================
+-- Stores ML model prediction history for auditing and analysis
+
+CREATE TABLE IF NOT EXISTS model_predictions (
+    id SERIAL PRIMARY KEY,
+    company_symbol TEXT NOT NULL,
+    predicted_risk_level TEXT NOT NULL,
+    confidence DOUBLE PRECISION NOT NULL CHECK (confidence >= 0 AND confidence <= 1),
+    probabilities JSONB NOT NULL,
+    input_features JSONB NOT NULL,
+    model_version TEXT DEFAULT '1.0',
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    
+    CONSTRAINT fk_company_symbol 
+        FOREIGN KEY (company_symbol) 
+        REFERENCES esg_companies(symbol) 
+        ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_predictions_symbol ON model_predictions(company_symbol);
+CREATE INDEX IF NOT EXISTS idx_predictions_created ON model_predictions(created_at DESC);
+
+COMMENT ON TABLE model_predictions IS 
+'Stores historical ML model predictions for companies';
+
+-- ==============================================================================
+-- Table: news_cache
+-- ==============================================================================
+-- Caches news articles from external APIs to reduce API calls
+
+CREATE TABLE IF NOT EXISTS news_cache (
+    id SERIAL PRIMARY KEY,
+    company_symbol TEXT NOT NULL,
+    query_hash TEXT NOT NULL,
+    articles JSONB NOT NULL,
+    source TEXT DEFAULT 'newsapi',
+    cached_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    
+    CONSTRAINT unique_news_cache UNIQUE(company_symbol, query_hash)
+);
+
+CREATE INDEX IF NOT EXISTS idx_news_cache_symbol ON news_cache(company_symbol);
+CREATE INDEX IF NOT EXISTS idx_news_cache_expires ON news_cache(expires_at);
+
+COMMENT ON TABLE news_cache IS 
+'Caches external news API responses to improve performance and reduce API costs';
+
+-- ==============================================================================
+-- Table: agent_analysis_cache
+-- ==============================================================================
+-- Caches multi-agent analysis results
+
+CREATE TABLE IF NOT EXISTS agent_analysis_cache (
+    id SERIAL PRIMARY KEY,
+    company_symbol TEXT NOT NULL,
+    analysis_type TEXT NOT NULL,
+    result JSONB NOT NULL,
+    agents_involved TEXT[] NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    
+    CONSTRAINT unique_analysis_cache UNIQUE(company_symbol, analysis_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_cache_symbol ON agent_analysis_cache(company_symbol);
+CREATE INDEX IF NOT EXISTS idx_agent_cache_expires ON agent_analysis_cache(expires_at);
+
+COMMENT ON TABLE agent_analysis_cache IS 
+'Caches results from multi-agent ESG analysis to improve response times';
+
+-- ==============================================================================
+-- Function: Clean expired cache entries
 -- ==============================================================================
 
--- Uncomment and modify for production environments with specific roles
--- GRANT SELECT ON esg_companies TO readonly_user;
--- GRANT SELECT, INSERT, UPDATE ON esg_companies TO app_user;
--- GRANT ALL PRIVILEGES ON esg_companies TO admin_user;
+CREATE OR REPLACE FUNCTION clean_expired_cache()
+RETURNS INTEGER AS $$
+DECLARE
+    deleted_count INTEGER;
+BEGIN
+    DELETE FROM news_cache WHERE expires_at < NOW();
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    
+    DELETE FROM agent_analysis_cache WHERE expires_at < NOW();
+    GET DIAGNOSTICS deleted_count = deleted_count + ROW_COUNT;
+    
+    RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION clean_expired_cache() IS 
+'Removes expired cache entries from news_cache and agent_analysis_cache tables';
+
+-- ==============================================================================
+-- View: company_summary
+-- ==============================================================================
+-- Provides a quick summary view of companies with latest predictions
+
+CREATE OR REPLACE VIEW company_summary AS
+SELECT 
+    e.symbol,
+    e.name,
+    e.sector,
+    e.industry,
+    e.total_esg_risk_score,
+    e.environment_risk_score,
+    e.social_risk_score,
+    e.governance_risk_score,
+    e.controversy_score,
+    e.esg_risk_level,
+    p.predicted_risk_level AS latest_prediction,
+    p.confidence AS prediction_confidence,
+    p.created_at AS prediction_date
+FROM esg_companies e
+LEFT JOIN LATERAL (
+    SELECT predicted_risk_level, confidence, created_at
+    FROM model_predictions
+    WHERE company_symbol = e.symbol
+    ORDER BY created_at DESC
+    LIMIT 1
+) p ON TRUE;
+
+COMMENT ON VIEW company_summary IS 
+'Aggregated view of companies with their latest model predictions';
+
+-- ==============================================================================
+-- Grant Permissions
+-- ==============================================================================
+
+-- Grant read-only access to application user
+-- GRANT SELECT ON ALL TABLES IN SCHEMA public TO app_user;
+-- GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO app_user;
+
+-- Grant full access to admin
+-- GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO admin_user;
+-- GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO admin_user;
 
 COMMIT;
+
+-- ==============================================================================
+-- Database Statistics
+-- ==============================================================================
+
+SELECT 
+    'esg_companies' AS table_name, 
+    COUNT(*) AS row_count 
+FROM esg_companies
+UNION ALL
+SELECT 
+    'model_predictions', 
+    COUNT(*) 
+FROM model_predictions
+UNION ALL
+SELECT 
+    'news_cache', 
+    COUNT(*) 
+FROM news_cache
+UNION ALL
+SELECT 
+    'agent_analysis_cache', 
+    COUNT(*) 
+FROM agent_analysis_cache;
 
 -- ==============================================================================
 -- End of Schema Definition

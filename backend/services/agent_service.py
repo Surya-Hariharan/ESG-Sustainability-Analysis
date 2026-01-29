@@ -10,6 +10,8 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 import logging
+from ..core.config import settings
+from .groq_service import groq_service
 
 logger = logging.getLogger(__name__)
 
@@ -260,6 +262,62 @@ class DiscussionOrchestrator(BaseAgent):
         
         alignment = self._check_alignment(news_sentiment, model_risk)
         
+        if groq_service.is_available():
+            return await self._groq_synthesis(context, news_analysis, model_analysis, alignment)
+        else:
+            return self._fallback_synthesis(context, news_analysis, model_analysis, alignment)
+    
+    async def _groq_synthesis(
+        self,
+        context: AgentContext,
+        news_analysis: Dict,
+        model_analysis: Dict,
+        alignment: str
+    ) -> Dict[str, Any]:
+        """Use Groq LLM for intelligent synthesis"""
+        model_prediction = {
+            "risk_level": model_analysis.get("risk_level", "Unknown"),
+            "confidence": model_analysis.get("confidence", "0%")
+        }
+        
+        groq_result = await groq_service.synthesize_agent_discussion(
+            news_analysis=news_analysis,
+            model_prediction=model_prediction,
+            company_name=context.company_name
+        )
+        
+        recommendations = self._generate_recommendations(
+            news_analysis.get("sentiment", "neutral"),
+            model_analysis.get("risk_level", "Unknown"),
+            news_analysis.get("risk_indicators", []),
+            alignment
+        )
+        
+        return {
+            "agent": self.name,
+            "synthesis": groq_result.get("synthesis", ""),
+            "news_model_alignment": alignment,
+            "recommendations": recommendations,
+            "overall_risk_assessment": self._assess_overall_risk(
+                news_analysis.get("sentiment", "neutral"),
+                model_analysis.get("risk_level", "Unknown"),
+                alignment
+            ),
+            "powered_by": "Groq LLM (llama-3.1-70b)"
+        }
+    
+    def _fallback_synthesis(
+        self,
+        context: AgentContext,
+        news_analysis: Dict,
+        model_analysis: Dict,
+        alignment: str
+    ) -> Dict[str, Any]:
+        """Fallback rule-based synthesis when Groq unavailable"""
+        news_sentiment = news_analysis.get("sentiment", "neutral")
+        model_risk = model_analysis.get("risk_level", "Unknown")
+        risk_indicators = news_analysis.get("risk_indicators", [])
+        
         recommendations = self._generate_recommendations(
             news_sentiment,
             model_risk,
@@ -268,7 +326,7 @@ class DiscussionOrchestrator(BaseAgent):
         )
         
         synthesis = self._synthesize_insights(
-            company,
+            context.company_name,
             news_analysis,
             model_analysis,
             alignment
@@ -276,11 +334,15 @@ class DiscussionOrchestrator(BaseAgent):
         
         return {
             "agent": self.name,
-            "company": company,
             "synthesis": synthesis,
             "news_model_alignment": alignment,
-            "actionable_recommendations": recommendations,
-            "overall_assessment": self._assess_overall_risk(news_sentiment, model_risk, alignment)
+            "recommendations": recommendations,
+            "overall_risk_assessment": self._assess_overall_risk(
+                news_sentiment,
+                model_risk,
+                alignment
+            ),
+            "note": "Using rule-based synthesis (Groq API not configured)"
         }
     
     def _check_alignment(self, news_sentiment: str, model_risk: str) -> str:
