@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Progress } from '@/components/ui/progress';
 import PageLayout from '@/components/PageLayout';
 import BlurText from '@/components/BlurText';
 

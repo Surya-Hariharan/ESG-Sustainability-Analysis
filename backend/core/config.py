@@ -1,4 +1,5 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
 from typing import List
 import os
 
@@ -6,46 +7,52 @@ import os
 class Settings(BaseSettings):
     APP_NAME: str = "ESG Dashboard API"
     VERSION: str = "2.0.0"
-    DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
-    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    DEBUG: bool = False
+    ENVIRONMENT: str = "development"
     
-    DB_HOST: str = os.getenv("DB_HOST", "localhost")
-    DB_PORT: int = int(os.getenv("DB_PORT", 5432))
-    DB_NAME: str = os.getenv("DB_NAME", "esg_db")
-    DB_USER: str = os.getenv("DB_USER", "postgres")
-    DB_PASSWORD: str = os.getenv("DB_PASSWORD", "")
+    DB_HOST: str = "localhost"
+    DB_PORT: int = 5432
+    DB_NAME: str = "esg_db"
+    DB_USER: str = "postgres"
+    DB_PASSWORD: str = ""
     
-    NEWS_API_KEY: str = os.getenv("NEWS_API_KEY", "")
-    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    NEWS_API_KEY: str = ""
+    GROQ_API_KEY: str = ""
+    OPENAI_API_KEY: str = ""
     
-    REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
-    REDIS_PORT: int = int(os.getenv("REDIS_PORT", 6379))
-    REDIS_DB: int = int(os.getenv("REDIS_DB", 0))
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
     
-    CORS_ORIGINS: List[str] = os.getenv(
-        "CORS_ORIGINS",
-        "http://localhost:8080,http://localhost:3000,http://localhost:5173"
-    ).split(",")
+    # Store as comma-separated strings, convert via property
+    CORS_ORIGINS_STR: str = "http://localhost:8080,http://localhost:3000,http://localhost:5173"
+    ALLOWED_HOSTS_STR: str = "localhost,127.0.0.1"
     
-    ALLOWED_HOSTS: List[str] = os.getenv(
-        "ALLOWED_HOSTS",
-        "localhost,127.0.0.1"
-    ).split(",")
+    SECRET_KEY: str = "dev-secret-key-change-in-production"
     
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
+    LOG_LEVEL: str = "INFO"
     
-    LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
+    RATE_LIMIT_PER_MINUTE: int = 100
     
-    RATE_LIMIT_PER_MINUTE: int = int(os.getenv("RATE_LIMIT_PER_MINUTE", 100))
+    NEWS_CACHE_TTL: int = 3600
+    AGENT_CACHE_TTL: int = 1800
     
-    NEWS_CACHE_TTL: int = int(os.getenv("NEWS_CACHE_TTL", 3600))
-    AGENT_CACHE_TTL: int = int(os.getenv("AGENT_CACHE_TTL", 1800))
+    model_config = SettingsConfigDict(
+        case_sensitive=True,
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
     
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    @property
+    def CORS_ORIGINS(self) -> List[str]:
+        """Parse CORS_ORIGINS as a list from comma-separated string."""
+        return [origin.strip() for origin in self.CORS_ORIGINS_STR.split(",") if origin.strip()]
+    
+    @property
+    def ALLOWED_HOSTS(self) -> List[str]:
+        """Parse ALLOWED_HOSTS as a list from comma-separated string."""
+        return [host.strip() for host in self.ALLOWED_HOSTS_STR.split(",") if host.strip()]
     
     def validate_api_keys(self) -> dict:
         """Validate that required API keys are configured"""

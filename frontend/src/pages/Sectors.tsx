@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, TrendingUp, TrendingDown, Building2 } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PageLayout from '@/components/PageLayout';
 import BlurText from '@/components/BlurText';
@@ -130,11 +130,10 @@ const Sectors = () => {
                       {/* Risk Level Badge */}
                       <div className="flex items-center justify-between pt-4 border-t border-white/10">
                         <span className="text-sm text-muted-foreground">Risk Level</span>
-                        <span className={`text-sm font-semibold ${
-                          riskLevel === 'Low' ? 'text-[#9EFFCD]' :
-                          riskLevel === 'Medium' ? 'text-[#FFD700]' :
-                          'text-[#FF6B6B]'
-                        }`}>
+                        <span className={`text-sm font-semibold ${riskLevel === 'Low' ? 'text-[#9EFFCD]' :
+                            riskLevel === 'Medium' ? 'text-[#FFD700]' :
+                              'text-[#FF6B6B]'
+                          }`}>
                           {riskLevel}
                         </span>
                       </div>

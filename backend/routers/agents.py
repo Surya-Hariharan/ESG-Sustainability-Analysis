@@ -24,52 +24,41 @@ class ChatRequest(BaseModel):
 @router.post("/analyze-company")
 async def analyze_company(request: CompanyAnalysisRequest):
     try:
-        with db_service.get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                SELECT "Symbol", "Name", "Sector", "Total ESG Risk score",
-                       "Environment Risk Score", "Social Risk Score", "Governance Risk Score",
-                       "Controversy Score", "ESG Risk Level", "Full Time Employees"
-                FROM esg_data
-                WHERE "Symbol" = %s
-                """,
-                (request.symbol,)
-            )
-            
-            row = cursor.fetchone()
-            cursor.close()
+        # Use the db_service method for consistent table/column names
+        company = db_service.get_company_by_symbol(request.symbol)
         
-        if not row:
+        if not company:
             raise HTTPException(status_code=404, detail=f"Company {request.symbol} not found")
         
+        # Format company data for agent pipeline
         company_data = {
-            "Symbol": row[0],
-            "Name": row[1],
-            "Sector": row[2],
-            "Total ESG Risk score": row[3],
-            "Environment Risk Score": row[4],
-            "Social Risk Score": row[5],
-            "Governance Risk Score": row[6],
-            "Controversy Score": row[7],
-            "ESG Risk Level": row[8],
-            "Full Time Employees": row[9]
+            "symbol": company.get("symbol"),
+            "name": company.get("name"),
+            "sector": company.get("sector"),
+            "industry": company.get("industry"),
+            "total_esg_risk_score": company.get("total_esg_risk_score"),
+            "environment_risk_score": company.get("environment_risk_score"),
+            "social_risk_score": company.get("social_risk_score"),
+            "governance_risk_score": company.get("governance_risk_score"),
+            "controversy_score": company.get("controversy_score"),
+            "controversy_level": company.get("controversy_level"),
+            "esg_risk_level": company.get("esg_risk_level"),
         }
         
         news_articles = []
         if request.include_news:
             news_articles = await news_service.fetch_company_news(
-                company_name=company_data["Name"],
+                company_name=company_data["name"],
                 days_back=request.days_back
             )
         
         model_prediction = {
-            "predicted_class": company_data.get("ESG Risk Level", "Unknown"),
+            "predicted_class": company_data.get("esg_risk_level", "Unknown"),
             "features_used": ["Environment Risk", "Social Risk", "Governance Risk", "Controversy Score"]
         }
         
         analysis = await agent_pipeline.run(
-            company_name=company_data["Name"],
+            company_name=company_data["name"],
             company_data=company_data,
             news_articles=news_articles,
             model_prediction=model_prediction
@@ -91,16 +80,13 @@ async def analyze_company(request: CompanyAnalysisRequest):
 @router.get("/company-news/{symbol}")
 async def get_company_news(symbol: str, days: int = 30):
     try:
-        with db_service.get_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute('SELECT "Name" FROM esg_data WHERE "Symbol" = %s', (symbol,))
-            row = cursor.fetchone()
-            cursor.close()
+        # Use db_service for consistent queries
+        company = db_service.get_company_by_symbol(symbol)
         
-        if not row:
+        if not company:
             raise HTTPException(status_code=404, detail=f"Company {symbol} not found")
         
-        company_name = row[0]
+        company_name = company.get("name")
         articles = await news_service.fetch_company_news(company_name, days_back=days)
         signals = news_service.extract_esg_signals(articles)
         

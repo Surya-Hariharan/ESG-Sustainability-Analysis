@@ -4,6 +4,7 @@
 .env
 .env.*
 !.env.example
+!.env.template
 
 # ========================================
 # Python
@@ -22,6 +23,7 @@ env/
 ENV/
 env.bak/
 venv.bak/
+.conda/
 
 # Packaging
 *.egg
@@ -78,7 +80,7 @@ data/raw/*.csv
 data/raw/*.xlsx
 data/raw/*.json
 data/processed/*.csv
-!data/processed/esg_dashboard_ready.csv
+!data/processed/esg_data_cleaned.csv
 *.parquet
 *.feather
 
@@ -150,3 +152,8 @@ reports/predictions/
 reports/figures/
 reports/tables/
 
+# ========================================
+# Gemini AI Agent
+# ========================================
+.gemini/
+.agent/

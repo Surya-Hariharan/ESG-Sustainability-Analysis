@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import {
   Target, Zap, Shield, Github, Linkedin, Mail,
-  Users, TrendingUp, Award, Sparkles, Code, Database,
-  Brain, Rocket, CheckCircle2, ArrowRight, Globe, Heart, Building2
+  TrendingUp, Award, Sparkles, BarChart3,
+  Brain, ArrowRight, Heart, Building2
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,19 +41,19 @@ const About = () => {
   ];
 
   const techStack = [
-    { name: 'React 18', category: 'Frontend', icon: Code, color: 'from-[#61DAFB] to-[#4A9ECC]' },
-    { name: 'TypeScript', category: 'Language', icon: Code, color: 'from-[#3178C6] to-[#235A97]' },
+    { name: 'React 18', category: 'Frontend', icon: BarChart3, color: 'from-[#61DAFB] to-[#4A9ECC]' },
+    { name: 'TypeScript', category: 'Language', icon: BarChart3, color: 'from-[#3178C6] to-[#235A97]' },
     { name: 'FastAPI', category: 'Backend', icon: Zap, color: 'from-[#009688] to-[#00695C]' },
     { name: 'PyTorch', category: 'Machine Learning', icon: Brain, color: 'from-[#EE4C2C] to-[#C43A1F]' },
-    { name: 'PostgreSQL', category: 'Database', icon: Database, color: 'from-[#336791] to-[#254B6D]' },
+    { name: 'PostgreSQL', category: 'Database', icon: BarChart3, color: 'from-[#336791] to-[#254B6D]' },
     { name: 'TailwindCSS', category: 'Styling', icon: Sparkles, color: 'from-[#06B6D4] to-[#0891B2]' },
-    { name: 'Three.js', category: '3D Graphics', icon: Globe, color: 'from-[#000000] to-[#333333]' },
-    { name: 'Redis', category: 'Caching', icon: Rocket, color: 'from-[#DC382D] to-[#A82822]' },
+    { name: 'Three.js', category: '3D Graphics', icon: Sparkles, color: 'from-[#000000] to-[#333333]' },
+    { name: 'Redis', category: 'Caching', icon: Zap, color: 'from-[#DC382D] to-[#A82822]' },
   ];
 
   const stats = [
     { value: 10000, label: 'Companies Analyzed', suffix: '+', icon: Building2, color: 'from-[#9429FF] to-[#B76EFF]' },
-    { value: 50, label: 'Industries Covered', suffix: '+', icon: Globe, color: 'from-[#6B9EFF] to-[#9EFFCD]' },
+    { value: 50, label: 'Industries Covered', suffix: '+', icon: TrendingUp, color: 'from-[#6B9EFF] to-[#9EFFCD]' },
     { value: 95, label: 'ML Accuracy', suffix: '%', icon: Brain, color: 'from-[#9EFFCD] to-[#6BFFEA]' },
     { value: 24, label: 'Data Updates', suffix: '/7', icon: TrendingUp, color: 'from-[#FFD700] to-[#FFA500]' },
   ];
@@ -63,7 +63,7 @@ const About = () => {
       year: '2024',
       title: 'Platform Launch',
       description: 'Launched comprehensive ESG analytics platform with AI-powered insights',
-      icon: Rocket,
+      icon: TrendingUp,
       color: 'from-[#9429FF] to-[#B76EFF]',
     },
     {
@@ -77,7 +77,7 @@ const About = () => {
       year: '2022',
       title: 'Data Collection',
       description: 'Built comprehensive ESG data infrastructure covering global markets',
-      icon: Database,
+      icon: BarChart3,
       color: 'from-[#9EFFCD] to-[#6BFFEA]',
     },
     {
@@ -101,7 +101,7 @@ const About = () => {
       role: 'Engineers',
       count: '20+',
       description: 'Full-stack developers and DevOps specialists',
-      icon: Code,
+      icon: BarChart3,
       color: 'from-[#6B9EFF] to-[#9EFFCD]',
     },
     {
@@ -305,7 +305,7 @@ const About = () => {
                     <div className="space-y-2">
                       {value.features.map((feature, i) => (
                         <div key={i} className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                          <CheckCircle2 className="h-3 w-3 text-[#9EFFCD]" />
+                          <Sparkles className="h-3 w-3 text-[#9EFFCD]" />
                           <span>{feature}</span>
                         </div>
                       ))}

@@ -165,23 +165,19 @@ class ModelService:
                 probabilities = torch.softmax(logits, dim=1).cpu().numpy()[0]
                 prediction = np.argmax(probabilities)
             
-            # Map prediction to labe[str, Any]:
-        if self._model is None:
-            return {
-                "status": "not_loaded",
-                "message": "Model not available. Please train the model using notebook 03."
-            }
-        
-        return {
-            "status": "loaded",
-            "type": "PyTorch",
-            "device": str(self._device) if self._device else "cpu",
-            "classes": list(self._label_mapping.keys()) if self._label_mapping else self._classes,
-            "feature_count": len(self._feature_columns),
-            "features": self._feature_columns[:10] if len(self._feature_columns) > 10 else self._feature_columns,
-            "architecture": self._metadata.get('model_architecture', {}) if self._metadata else {},
-            "training_date": self._metadata.get('training_date', 'Unknown') if self._metadata else 'Unknown',
-            "test_accuracy": self._metadata.get('test_accuracy', 'N/A') if self._metadata else 'N/A'ties))
+            # Map prediction to label
+            if self._label_mapping:
+                risk_level = list(self._label_mapping.keys())[prediction]
+            else:
+                risk_level = self._classes[prediction]
+            
+            confidence = float(probabilities[prediction])
+            prob_dict = {
+                cls: float(prob) 
+                for cls, prob in zip(
+                    list(self._label_mapping.keys()) if self._label_mapping else self._classes,
+                    probabilities
+                )
             }
             
             return ESGPredictionResponse(
@@ -199,15 +195,23 @@ class ModelService:
         predictions = [self.predict_single(req) for req in requests]
         return BatchPredictionResponse(predictions=predictions, count=len(predictions))
     
-    def get_model_info(self) -> Dict:
+    def get_model_info(self) -> Dict[str, Any]:
+        if self._model is None:
+            return {
+                "status": "not_loaded",
+                "message": "Model not available. Please train the model using notebook 03."
+            }
+        
         return {
             "status": "loaded",
-            "type": "PyTorch" if isinstance(self._model, torch.nn.Module) else "scikit-learn",
+            "type": "PyTorch",
             "device": str(self._device) if self._device else "cpu",
-            "classes": self._classes,
-            "features": ["environment_risk_score", "social_risk_score", 
-                        "governance_risk_score", "controversy_score", "full_time_employees"],
-            "metadata": self._metadata or {}
+            "classes": list(self._label_mapping.keys()) if self._label_mapping else self._classes,
+            "feature_count": len(self._feature_columns),
+            "features": self._feature_columns[:10] if len(self._feature_columns) > 10 else self._feature_columns,
+            "architecture": self._metadata.get('model_architecture', {}) if self._metadata else {},
+            "training_date": self._metadata.get('training_date', 'Unknown') if self._metadata else 'Unknown',
+            "test_accuracy": self._metadata.get('test_accuracy', 'N/A') if self._metadata else 'N/A'
         }
 
 

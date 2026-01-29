@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Footer from '@/components/Footer';
-import BlurText from '@/components/BlurText';
 import TextType from '@/components/TextType';
 
 const Index = () => {
@@ -44,205 +43,205 @@ const Index = () => {
 
   return (
     <div className="relative">
-        {/* Hero Section - Only Typing Text and Buttons */}
-        <section className="min-h-screen flex items-center justify-center px-4 -mt-16">
-          <div className="max-w-6xl mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <div className="mb-16 max-w-5xl mx-auto min-h-[160px] flex items-center justify-center">
-                <TextType 
-                  text={[
-                    "Unlock powerful insights into corporate sustainability performance",
-                    "AI-driven analytics and comprehensive ESG metrics",
-                    "Make informed decisions about corporate sustainability",
-                    "Transform your ESG analysis with cutting-edge technology"
-                  ]}
-                  typingSpeed={50}
-                  deletingSpeed={30}
-                  pauseDuration={2000}
-                  showCursor
-                  cursorCharacter="|"
-                  cursorBlinkDuration={0.7}
-                />
-              </div>
-              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                <Link to="/companies">
-                  <Button size="lg" className="rounded-full px-10 py-4 text-lg group">
-                    Explore Companies
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
-                <Link to="/predictor">
-                  <Button size="lg" variant="outline" className="rounded-full px-10 py-4 text-lg">
-                    Try Risk Predictor
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Stats Section - Below the fold */}
-        <section className="py-16 px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <Card className="backdrop-blur-xl bg-background/60 border-white/10">
-                    <CardContent className="p-6 text-center">
-                      <div className="text-4xl md:text-5xl font-extrabold text-white mb-3">
-                        {stat.value}
-                      </div>
-                      <div className="text-base font-semibold text-white/80">{stat.label}</div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+      {/* Hero Section - Only Typing Text and Buttons */}
+      <section className="min-h-screen flex items-center justify-center px-4 -mt-16">
+        <div className="max-w-6xl mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="mb-16 max-w-5xl mx-auto min-h-[160px] flex items-center justify-center">
+              <TextType
+                text={[
+                  "Unlock powerful insights into corporate sustainability performance",
+                  "AI-driven analytics and comprehensive ESG metrics",
+                  "Make informed decisions about corporate sustainability",
+                  "Transform your ESG analysis with cutting-edge technology"
+                ]}
+                typingSpeed={50}
+                deletingSpeed={30}
+                pauseDuration={2000}
+                showCursor
+                cursorCharacter="|"
+                cursorBlinkDuration={0.7}
+              />
             </div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="py-12 px-4">
-          <div className="max-w-6xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <h2 className="text-5xl md:text-6xl font-extrabold mb-6 text-white">
-                Powerful Features for
-                <span className="bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
-                  {' '}
-                  Sustainable Insights
-                </span>
-              </h2>
-              <p className="text-2xl font-semibold text-white/80 max-w-3xl mx-auto">
-                Everything you need to make informed decisions about corporate sustainability
-              </p>
-            </motion.div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {features.map((feature, index) => (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="h-full"
-                >
-                  <Card className="backdrop-blur-xl bg-background/60 border-white/10 hover:bg-background/80 transition-all duration-300 group h-full">
-                    <CardContent className="p-8 h-full">
-                      <div className="flex items-start space-x-4 h-full">
-                        <div
-                          className={`p-3 rounded-xl bg-gradient-to-r ${feature.color} text-white group-hover:scale-110 transition-transform flex-shrink-0`}
-                        >
-                          <feature.icon className="h-6 w-6" />
-                        </div>
-                        <div className="flex-1 flex flex-col">
-                          <h3 className="text-2xl font-bold mb-3 text-white">{feature.title}</h3>
-                          <p className="text-lg font-medium text-white/80 leading-relaxed">{feature.description}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <Link to="/companies">
+                <Button size="lg" className="rounded-full px-10 py-4 text-lg group">
+                  Explore Companies
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Link to="/predictor">
+                <Button size="lg" variant="outline" className="rounded-full px-10 py-4 text-lg">
+                  Try Risk Predictor
+                </Button>
+              </Link>
             </div>
-          </div>
-        </section>
+          </motion.div>
+        </div>
+      </section>
 
-        {/* CTA Section */}
-        <section className="py-12 px-4">
-          <div className="max-w-6xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-            >
-              <div className="relative overflow-hidden rounded-3xl">
-                {/* Animated gradient background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-cyan-600/20" />
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-purple-500/10 to-transparent" />
-                
-                {/* Content */}
-                <div className="relative backdrop-blur-xl bg-background/40 border border-white/10 p-12 md:p-16">
-                  <div className="max-w-3xl mx-auto text-center">
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.5, delay: 0.2 }}
-                      viewport={{ once: true }}
-                    >
-                      <h2 className="text-5xl md:text-6xl font-extrabold mb-8 text-white">
-                        Ready to Transform Your ESG Analysis?
-                      </h2>
-                    </motion.div>
-                    
-                    <motion.p
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.3 }}
-                      viewport={{ once: true }}
-                      className="text-2xl font-semibold text-white/90 mb-12 leading-relaxed"
-                    >
-                      Start exploring comprehensive sustainability data and AI-powered insights today
-                    </motion.p>
-                    
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: 0.4 }}
-                      viewport={{ once: true }}
-                      className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-                    >
-                      <Link to="/sectors">
-                        <Button 
-                          size="lg" 
-                          className="rounded-full px-10 py-6 text-base font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 group"
-                        >
-                          View Sector Analytics
-                          <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                        </Button>
-                      </Link>
-                      <Link to="/about">
-                        <Button 
-                          size="lg" 
-                          variant="outline" 
-                          className="rounded-full px-10 py-6 text-base font-semibold border-2 border-purple-500/50 hover:border-purple-400 hover:bg-purple-500/10 transition-all duration-300"
-                        >
-                          Learn More
-                        </Button>
-                      </Link>
-                    </motion.div>
-                  </div>
-                  
-                  {/* Decorative elements */}
-                  <div className="absolute top-0 left-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl" />
-                  <div className="absolute bottom-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl" />
+      {/* Stats Section - Below the fold */}
+      <section className="py-16 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {stats.map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <Card className="backdrop-blur-xl bg-background/60 border-white/10">
+                  <CardContent className="p-6 text-center">
+                    <div className="text-4xl md:text-5xl font-extrabold text-white mb-3">
+                      {stat.value}
+                    </div>
+                    <div className="text-base font-semibold text-white/80">{stat.label}</div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-5xl md:text-6xl font-extrabold mb-6 text-white">
+              Powerful Features for
+              <span className="bg-gradient-to-r from-cyan-300 to-purple-300 bg-clip-text text-transparent">
+                {' '}
+                Sustainable Insights
+              </span>
+            </h2>
+            <p className="text-2xl font-semibold text-white/80 max-w-3xl mx-auto">
+              Everything you need to make informed decisions about corporate sustainability
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="h-full"
+              >
+                <Card className="backdrop-blur-xl bg-background/60 border-white/10 hover:bg-background/80 transition-all duration-300 group h-full">
+                  <CardContent className="p-8 h-full">
+                    <div className="flex items-start space-x-4 h-full">
+                      <div
+                        className={`p-3 rounded-xl bg-gradient-to-r ${feature.color} text-white group-hover:scale-110 transition-transform flex-shrink-0`}
+                      >
+                        <feature.icon className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1 flex flex-col">
+                        <h3 className="text-2xl font-bold mb-3 text-white">{feature.title}</h3>
+                        <p className="text-lg font-medium text-white/80 leading-relaxed">{feature.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <div className="relative overflow-hidden rounded-3xl">
+              {/* Animated gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-cyan-600/20" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-purple-500/10 to-transparent" />
+
+              {/* Content */}
+              <div className="relative backdrop-blur-xl bg-background/40 border border-white/10 p-12 md:p-16">
+                <div className="max-w-3xl mx-auto text-center">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    viewport={{ once: true }}
+                  >
+                    <h2 className="text-5xl md:text-6xl font-extrabold mb-8 text-white">
+                      Ready to Transform Your ESG Analysis?
+                    </h2>
+                  </motion.div>
+
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    viewport={{ once: true }}
+                    className="text-2xl font-semibold text-white/90 mb-12 leading-relaxed"
+                  >
+                    Start exploring comprehensive sustainability data and AI-powered insights today
+                  </motion.p>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                    viewport={{ once: true }}
+                    className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+                  >
+                    <Link to="/sectors">
+                      <Button
+                        size="lg"
+                        className="rounded-full px-10 py-6 text-base font-semibold bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 group"
+                      >
+                        View Sector Analytics
+                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                      </Button>
+                    </Link>
+                    <Link to="/about">
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        className="rounded-full px-10 py-6 text-base font-semibold border-2 border-purple-500/50 hover:border-purple-400 hover:bg-purple-500/10 transition-all duration-300"
+                      >
+                        Learn More
+                      </Button>
+                    </Link>
+                  </motion.div>
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
 
-        {/* Footer */}
-        <Footer />
-      </div>
-    );
+                {/* Decorative elements */}
+                <div className="absolute top-0 left-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl" />
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <Footer />
+    </div>
+  );
 };
 
 export default Index;

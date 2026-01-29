@@ -4,7 +4,8 @@ from psycopg2.extras import RealDictCursor
 from typing import List, Dict, Any, Optional
 from contextlib import contextmanager
 import logging
-import os
+
+from ..core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -24,17 +25,17 @@ class DatabaseService:
             self._connection_pool = pool.ThreadedConnectionPool(
                 minconn=2,
                 maxconn=20,
-                host=os.getenv("DB_HOST", "localhost"),
-                port=int(os.getenv("DB_PORT", 5432)),
-                database=os.getenv("DB_NAME", "esg_db"),
-                user=os.getenv("DB_USER", "postgres"),
-                password=os.getenv("DB_PASSWORD", ""),
+                host=settings.DB_HOST,
+                port=settings.DB_PORT,
+                database=settings.DB_NAME,
+                user=settings.DB_USER,
+                password=settings.DB_PASSWORD,
                 cursor_factory=RealDictCursor,
                 connect_timeout=10
             )
-            logger.info("✅ Database connection pool initialized")
+            logger.info("Database connection pool initialized successfully")
         except Exception as e:
-            logger.error(f"❌ Failed to initialize database pool: {e}")
+            logger.error(f"Failed to initialize database pool: {e}")
             raise
     
     @contextmanager
@@ -78,13 +79,13 @@ class DatabaseService:
     def get_top_companies(self, limit: int = 10) -> List[Dict[str, Any]]:
         query = """
             SELECT 
-                "Symbol" as symbol,
-                "Name" as name,
-                "Sector" as sector,
-                "Total ESG Risk score" as total_esg_risk_score
-            FROM esg_data
-            WHERE "Total ESG Risk score" IS NOT NULL
-            ORDER BY "Total ESG Risk score" ASC
+                symbol,
+                name,
+                sector,
+                total_esg_risk_score
+            FROM esg_companies
+            WHERE total_esg_risk_score IS NOT NULL
+            ORDER BY total_esg_risk_score ASC
             LIMIT %s
         """
         return self.execute_query(query, (limit,))
@@ -92,13 +93,13 @@ class DatabaseService:
     def get_sector_averages(self) -> List[Dict[str, Any]]:
         query = """
             SELECT 
-                "Sector" as sector,
-                AVG("Total ESG Risk score") as avg_esg_score,
+                sector,
+                AVG(total_esg_risk_score) as avg_esg_score,
                 COUNT(*) as company_count
-            FROM esg_data
-            WHERE "Sector" IS NOT NULL 
-              AND "Total ESG Risk score" IS NOT NULL
-            GROUP BY "Sector"
+            FROM esg_companies
+            WHERE sector IS NOT NULL 
+              AND total_esg_risk_score IS NOT NULL
+            GROUP BY sector
             ORDER BY avg_esg_score ASC
         """
         return self.execute_query(query)
@@ -106,32 +107,32 @@ class DatabaseService:
     def get_high_controversy_companies(self, min_score: float = 50.0) -> List[Dict[str, Any]]:
         query = """
             SELECT 
-                "Symbol" as symbol,
-                "Name" as name,
-                "Controversy Score" as controversy_score,
-                "Controversy Level" as controversy_level
-            FROM esg_data
-            WHERE "Controversy Score" >= %s
-            ORDER BY "Controversy Score" DESC
+                symbol,
+                name,
+                controversy_score,
+                controversy_level
+            FROM esg_companies
+            WHERE controversy_score >= %s
+            ORDER BY controversy_score DESC
         """
         return self.execute_query(query, (min_score,))
     
     def get_company_by_symbol(self, symbol: str) -> Optional[Dict[str, Any]]:
         query = """
             SELECT 
-                "Symbol" as symbol,
-                "Name" as name,
-                "Sector" as sector,
-                "Industry" as industry,
-                "Total ESG Risk score" as total_esg_risk_score,
-                "Environment Risk Score" as environment_risk_score,
-                "Social Risk Score" as social_risk_score,
-                "Governance Risk Score" as governance_risk_score,
-                "Controversy Score" as controversy_score,
-                "Controversy Level" as controversy_level,
-                "ESG Risk Level" as esg_risk_level
-            FROM esg_data
-            WHERE UPPER("Symbol") = UPPER(%s)
+                symbol,
+                name,
+                sector,
+                industry,
+                total_esg_risk_score,
+                environment_risk_score,
+                social_risk_score,
+                governance_risk_score,
+                controversy_score,
+                controversy_level,
+                esg_risk_level
+            FROM esg_companies
+            WHERE UPPER(symbol) = UPPER(%s)
             LIMIT 1
         """
         return self.execute_query(query, (symbol,), fetch_one=True)
@@ -144,20 +145,20 @@ class DatabaseService:
     ) -> List[Dict[str, Any]]:
         query = """
             SELECT 
-                "Symbol" as symbol,
-                "Name" as name,
-                "Sector" as sector,
-                "Total ESG Risk score" as total_esg_risk_score
-            FROM esg_data
-            WHERE ("Name" ILIKE %s OR "Symbol" ILIKE %s)
+                symbol,
+                name,
+                sector,
+                total_esg_risk_score
+            FROM esg_companies
+            WHERE (name ILIKE %s OR symbol ILIKE %s)
         """
         params = [f"%{query_text}%", f"%{query_text}%"]
         
         if sector:
-            query += " AND UPPER(\"Sector\") = UPPER(%s)"
+            query += " AND UPPER(sector) = UPPER(%s)"
             params.append(sector)
         
-        query += " ORDER BY \"Total ESG Risk score\" ASC LIMIT %s"
+        query += " ORDER BY total_esg_risk_score ASC LIMIT %s"
         params.append(limit)
         
         return self.execute_query(query, tuple(params))

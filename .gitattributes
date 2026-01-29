@@ -1,29 +1,90 @@
+# ========================================
+# Git Attributes Configuration
+# ========================================
+
 # Ensure node_modules is never committed
 **/node_modules/** -diff -merge
 frontend/node_modules/** -diff -merge
 
-# Handle line endings
+# ========================================
+# Line Endings
+# ========================================
+# Auto-detect text files and normalize line endings
 * text=auto
+
+# Source code files
 *.ts text eol=lf
 *.tsx text eol=lf
 *.js text eol=lf
 *.jsx text eol=lf
 *.json text eol=lf
-*.md text eol=lf
-*.py text eol=lf
 *.css text eol=lf
+*.scss text eol=lf
 *.html text eol=lf
+*.py text eol=lf
+*.sql text eol=lf
+
+# Configuration files
 *.yml text eol=lf
 *.yaml text eol=lf
+*.toml text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+*.env text eol=lf
+.env.* text eol=lf
 
-# Binary files
+# Documentation
+*.md text eol=lf
+*.txt text eol=lf
+*.rst text eol=lf
+
+# ========================================
+# Binary Files
+# ========================================
+# Images
 *.png binary
 *.jpg binary
 *.jpeg binary
 *.gif binary
 *.ico binary
+*.webp binary
+*.svg binary
+
+# Fonts
 *.woff binary
 *.woff2 binary
 *.ttf binary
 *.eot binary
-*.svg binary
+*.otf binary
+
+# Data files
+*.csv binary
+*.xlsx binary
+*.xls binary
+*.parquet binary
+
+# Model files
+*.pkl binary
+*.joblib binary
+*.pt binary
+*.pth binary
+*.h5 binary
+
+# Archives
+*.zip binary
+*.tar binary
+*.tar.gz binary
+*.rar binary
+*.7z binary
+
+# ========================================
+# Diff Settings
+# ========================================
+# Lock files - no diff
+package-lock.json -diff
+yarn.lock -diff
+pnpm-lock.yaml -diff
+
+# Generated files - no diff
+*.min.js -diff
+*.min.css -diff
