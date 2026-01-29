@@ -17,8 +17,9 @@ class GroqService:
     def __init__(self):
         self.api_key = settings.GROQ_API_KEY
         self.base_url = "https://api.groq.com/openai/v1"
-        self.model = "llama-3.1-70b-versatile"  # Fast and powerful
+        self.model = "llama-3.3-70b-versatile"  # Latest stable model
         self.timeout = 30.0
+
         
         if not self.api_key or self.api_key == "your_groq_api_key_here":
             logger.warning(
@@ -344,7 +345,7 @@ User Question: {message}"""
                         "error": False
                     }
                 else:
-                    logger.error(f"Groq chat error: {response.status_code}")
+                    logger.error(f"Groq chat error: {response.status_code} - {response.text}")
                     return {
                         "response": f"I encountered an error processing your request. Please try again.",
                         "error": True
