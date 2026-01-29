@@ -155,7 +155,26 @@ class ApiService {
     const { data } = await this.client.post<PredictionResponse>('/api/predict', request);
     return data;
   }
+
+  async sendChatMessage(
+    message: string,
+    company?: string,
+    history?: Array<{ role: string; content: string }>
+  ): Promise<{ success: boolean; response: string; company?: string; model?: string }> {
+    const { data } = await this.client.post('/api/agents/chat', {
+      message,
+      company,
+      history,
+    });
+    return data;
+  }
+
+  async getAgentStatus(): Promise<{ groq_available: boolean; model?: string; status: string }> {
+    const { data } = await this.client.get('/api/agents/status');
+    return data;
+  }
 }
 
 export const api = new ApiService();
 export default api;
+

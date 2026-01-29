@@ -6,6 +6,7 @@ import logging
 from backend.services.news_service import news_service
 from backend.services.agent_service import agent_pipeline
 from backend.services.database import db_service
+from backend.services.groq_service import groq_service
 
 router = APIRouter(prefix="/api/agents", tags=["agents"])
 logger = logging.getLogger(__name__)
@@ -17,9 +18,13 @@ class CompanyAnalysisRequest(BaseModel):
     include_prediction: Optional[bool] = True
 
 class ChatRequest(BaseModel):
-    company: str
     message: str
-    context: Optional[Dict[str, Any]] = None
+    company: Optional[str] = None
+    history: Optional[List[Dict[str, str]]] = None
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
 
 @router.post("/analyze-company")
 async def analyze_company(request: CompanyAnalysisRequest):
@@ -121,8 +126,52 @@ async def get_sector_insights(sector: str, days: int = 7):
 
 @router.post("/chat")
 async def chat_with_agents(request: ChatRequest):
+    """Chat with ESG AI assistant powered by Groq"""
+    try:
+        # Get company data if symbol provided
+        company_data = None
+        if request.company:
+            company = db_service.get_company_by_symbol(request.company.upper())
+            if company:
+                company_data = {
+                    "symbol": company.get("symbol"),
+                    "name": company.get("name"),
+                    "sector": company.get("sector"),
+                    "total_esg_risk_score": company.get("total_esg_risk_score"),
+                    "environment_risk_score": company.get("environment_risk_score"),
+                    "social_risk_score": company.get("social_risk_score"),
+                    "governance_risk_score": company.get("governance_risk_score"),
+                    "controversy_score": company.get("controversy_score"),
+                }
+        
+        # Call Groq chat service
+        result = await groq_service.chat(
+            message=request.message,
+            company_data=company_data,
+            chat_history=request.history
+        )
+        
+        return {
+            "success": not result.get("error", False),
+            "response": result.get("response", "No response generated"),
+            "company": request.company,
+            "model": result.get("model", "groq")
+        }
+        
+    except Exception as e:
+        logger.error(f"Chat error: {str(e)}")
+        return {
+            "success": False,
+            "response": f"An error occurred: {str(e)}",
+            "company": request.company
+        }
+
+@router.get("/status")
+async def get_agent_status():
+    """Check agent service status"""
     return {
-        "message": "Chat functionality coming soon",
-        "company": request.company,
-        "response": "This endpoint will enable conversational analysis of ESG data with AI agents."
+        "groq_available": groq_service.is_available(),
+        "model": groq_service.model if groq_service.is_available() else None,
+        "status": "ready" if groq_service.is_available() else "api_key_missing"
     }
+

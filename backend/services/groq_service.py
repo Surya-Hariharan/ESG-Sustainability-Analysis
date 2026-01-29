@@ -250,6 +250,118 @@ Recommendation: {'Monitor closely due to elevated risk' if risk_level == 'High' 
             "confidence": confidence,
             "note": "Using fallback synthesis (Groq API not configured)"
         }
+    
+    async def chat(
+        self,
+        message: str,
+        company_data: Optional[Dict] = None,
+        chat_history: Optional[List[Dict]] = None
+    ) -> Dict:
+        """
+        Conversational chat interface for ESG queries
+        
+        Args:
+            message: User's message
+            company_data: Optional company ESG data for context
+            chat_history: Optional previous conversation history
+            
+        Returns:
+            Dict with response and metadata
+        """
+        if not self.is_available():
+            return {
+                "response": "I'm sorry, the AI service is not configured. Please set up your GROQ_API_KEY in the .env file to enable chat functionality.",
+                "error": True
+            }
+        
+        # Build system prompt
+        system_prompt = """You are an expert ESG (Environmental, Social, Governance) analyst assistant. 
+You help users understand ESG risks, sustainability metrics, and corporate responsibility.
+
+Your capabilities:
+- Explain ESG concepts and metrics
+- Analyze company sustainability performance
+- Discuss ESG risks and opportunities
+- Provide insights on sectors and industries
+- Answer questions about environmental, social, and governance factors
+
+Be concise, factual, and helpful. If asked about specific company data, use the provided context.
+Format your responses with clear structure when appropriate."""
+
+        # Build messages
+        messages = [{"role": "system", "content": system_prompt}]
+        
+        # Add chat history if provided
+        if chat_history:
+            for msg in chat_history[-6:]:  # Keep last 6 messages for context
+                messages.append({
+                    "role": msg.get("role", "user"),
+                    "content": msg.get("content", "")
+                })
+        
+        # Build user message with context
+        user_content = message
+        if company_data:
+            context = f"""
+[Company Context]
+Symbol: {company_data.get('symbol', 'N/A')}
+Name: {company_data.get('name', 'N/A')}
+Sector: {company_data.get('sector', 'N/A')}
+ESG Risk Score: {company_data.get('total_esg_risk_score', 'N/A')}
+Environment Risk: {company_data.get('environment_risk_score', 'N/A')}
+Social Risk: {company_data.get('social_risk_score', 'N/A')}
+Governance Risk: {company_data.get('governance_risk_score', 'N/A')}
+Controversy Score: {company_data.get('controversy_score', 'N/A')}
+
+User Question: {message}"""
+            user_content = context
+        
+        messages.append({"role": "user", "content": user_content})
+        
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                response = await client.post(
+                    f"{self.base_url}/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": self.model,
+                        "messages": messages,
+                        "temperature": 0.7,
+                        "max_tokens": 800
+                    }
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    ai_response = result["choices"][0]["message"]["content"]
+                    
+                    return {
+                        "response": ai_response,
+                        "model": self.model,
+                        "error": False
+                    }
+                else:
+                    logger.error(f"Groq chat error: {response.status_code}")
+                    return {
+                        "response": f"I encountered an error processing your request. Please try again.",
+                        "error": True
+                    }
+                    
+        except httpx.TimeoutException:
+            return {
+                "response": "The request timed out. Please try again.",
+                "error": True
+            }
+        except Exception as e:
+            logger.error(f"Chat error: {str(e)}")
+            return {
+                "response": f"An error occurred: {str(e)}",
+                "error": True
+            }
 
 
 groq_service = GroqService()
+

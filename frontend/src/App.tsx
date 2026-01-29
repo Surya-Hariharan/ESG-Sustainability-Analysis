@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Layout from './components/Layout';
 import { Spinner } from './components/ui/spinner';
+import Chatbot from './components/Chatbot';
 import './App.css';
 
 // Lazy load pages
@@ -51,6 +52,7 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+          <Chatbot />
         </Layout>
       </Router>
     </QueryClientProvider>
@@ -58,3 +60,4 @@ function App() {
 }
 
 export default App;
+

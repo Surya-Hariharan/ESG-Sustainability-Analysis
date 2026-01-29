@@ -89,7 +89,7 @@ class ModelService:
             self._device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
             
             if model_path.exists():
-                checkpoint = torch.load(model_path, map_location=self._device)
+                checkpoint = torch.load(model_path, map_location=self._device, weights_only=False)
                 
                 arch = checkpoint.get('model_architecture', {})
                 self._model = ESGRiskClassifier(

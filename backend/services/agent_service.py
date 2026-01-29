@@ -121,7 +121,7 @@ class ModelInterpretabilityAgent(BaseAgent):
     def _load_model(self):
         try:
             if self.model_path.exists():
-                checkpoint = torch.load(self.model_path, map_location='cpu')
+                checkpoint = torch.load(self.model_path, map_location='cpu', weights_only=False)
                 self.metadata = checkpoint
                 
                 arch = checkpoint.get('model_architecture', {})
