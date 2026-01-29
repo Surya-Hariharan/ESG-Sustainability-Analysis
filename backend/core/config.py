@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     REDIS_DB: int = 0
     
     # Store as comma-separated strings, convert via property
-    CORS_ORIGINS_STR: str = "http://localhost:8080,http://localhost:3000,http://localhost:5173"
+    CORS_ORIGINS_STR: str = "http://localhost:8080,http://127.0.0.1:8080,http://localhost:3000,http://localhost:5173"
     ALLOWED_HOSTS_STR: str = "localhost,127.0.0.1"
     
     SECRET_KEY: str = "dev-secret-key-change-in-production"

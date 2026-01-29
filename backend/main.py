@@ -49,14 +49,11 @@ app = FastAPI(
 limiter = setup_rate_limiting(app)
 
 # Add middleware in order (last added = first executed)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
-    expose_headers=["X-Total-Count", "X-Page-Count"],
-)
+# Add middleware in order (last added = first executed)
+
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(SQLInjectionProtectionMiddleware)
+app.add_middleware(XSSProtectionMiddleware)
 
 if settings.ENVIRONMENT == "production":
     app.add_middleware(
@@ -64,9 +61,21 @@ if settings.ENVIRONMENT == "production":
         allowed_hosts=settings.ALLOWED_HOSTS
     )
 
-app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(SQLInjectionProtectionMiddleware)
-app.add_middleware(XSSProtectionMiddleware)
+# CORS must be the last one added so it's the first one executed (outermost layer)
+cors_config = {
+    "allow_origins": settings.CORS_ORIGINS,
+    "allow_credentials": True,
+    "allow_methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "allow_headers": ["*"],
+    "expose_headers": ["X-Total-Count", "X-Page-Count"],
+}
+
+# In development, allow all origins via regex to handle localhost vs 127.0.0.1 mismatches
+if settings.ENVIRONMENT == "development":
+    cors_config["allow_origin_regex"] = "https?://.*"
+    cors_config["allow_origins"] = []
+
+app.add_middleware(CORSMiddleware, **cors_config)
 
 # Include routers
 app.include_router(analytics.router, prefix="/api")

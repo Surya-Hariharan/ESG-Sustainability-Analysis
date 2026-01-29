@@ -24,6 +24,14 @@ const Companies = () => {
         const data = await api.getTopCompanies(100);
         setCompanies(data);
       } catch (err: any) {
+        if (err.message && err.message.includes('canceled')) return;
+
+        console.error("Full API Error:", err);
+        if (err.response) {
+          console.error("Response Data:", err.response.data);
+          console.error("Response Status:", err.response.status);
+          console.error("Response Headers:", err.response.headers);
+        }
         setError(err.message || 'Failed to load companies');
       } finally {
         setLoading(false);

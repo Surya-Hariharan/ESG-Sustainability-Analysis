@@ -13,10 +13,9 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 
 
 class SQLInjectionProtectionMiddleware(BaseHTTPMiddleware):
-    SQL_INJECTION_PATTERNS = [
         r"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE)\b)",
         r"(--|;|\/\*|\*\/|xp_|sp_|UNION|WAITFOR|DELAY)",
-        r"('|\"|\\x27|\\x22|\\x2D\\x2D)",
+        # Removed aggressive quote matching which blocks JSON
         r"(\bOR\b.*=.*|\bAND\b.*=.*)",
         r"(CHAR\(|CHR\(|ASCII\(|SUBSTRING\()",
     ]

@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import axios, { AxiosInstance, AxiosError } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
 export interface Company {
   symbol: string;
@@ -84,6 +84,8 @@ class ApiService {
           apiError.message = data.detail || error.message;
         } else if (error.code === 'ECONNABORTED') {
           apiError.message = 'Request timed out. Please try again.';
+        } else if (error.code === 'ERR_CANCELED') {
+          apiError.message = 'Request canceled';
         } else if (!error.response) {
           apiError.message = 'Unable to connect to server. Please check your connection.';
         }
