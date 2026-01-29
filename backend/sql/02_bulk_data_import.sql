@@ -1,14 +1,8 @@
 -- ==============================================================================
--- ESG Data Bulk Import Utility
+-- Bulk Data Import Script
 -- ==============================================================================
--- Purpose: Safely import and upsert ESG data from CSV files into the database
---          using staging tables and conflict resolution
---
--- Usage: Execute this script after preparing your CSV file
--- CSV Path: data/processed/esg_data_cleaned.csv
---
--- Created: 2024
--- Last Modified: 2026-01-26
+-- Purpose: Import ESG company data from CSV files into the database
+-- Usage: Run after 01_create_tables.sql
 -- ==============================================================================
 
 BEGIN;
@@ -16,58 +10,34 @@ BEGIN;
 -- ==============================================================================
 -- Step 1: Create Staging Table
 -- ==============================================================================
--- Temporary table that matches esg_companies structure
--- Dropped automatically on commit
+-- Temporary table that matches sample data structure
 
 DROP TABLE IF EXISTS staging_esg_data;
 
 CREATE TEMP TABLE staging_esg_data (
     symbol TEXT,
     name TEXT,
-    address TEXT,
     sector TEXT,
     industry TEXT,
-    full_time_employees INTEGER,
-    description TEXT,
     total_esg_risk_score DOUBLE PRECISION,
     environment_risk_score DOUBLE PRECISION,
-    governance_risk_score DOUBLE PRECISION,
     social_risk_score DOUBLE PRECISION,
-    controversy_level TEXT,
+    governance_risk_score DOUBLE PRECISION,
+    controversy_level INTEGER,
     controversy_score DOUBLE PRECISION,
     esg_risk_percentile DOUBLE PRECISION,
     esg_risk_level TEXT
 ) ON COMMIT DROP;
 
 -- ==============================================================================
--- Step 2: Import CSV Data into Staging Table
+-- Step 2: Import Sample Data
 -- ==============================================================================
--- Adjust the file path as needed for your environment
--- For production, consider using \COPY command from psql client
-
-COPY staging_esg_data(
-    symbol,
-    name,
-    address,
-    sector,
-    industry,
-    full_time_employees,
-    description,
-    total_esg_risk_score,
-    environment_risk_score,
-    governance_risk_score,
-    social_risk_score,
-    controversy_level,
-    controversy_score,
-    esg_risk_percentile,
-    esg_risk_level
--- Import sample data for testing
--- Note: Replace with actual CSV import when data file is available
+-- Insert sample data for testing
 -- For CSV import, use: \copy staging_esg_data(...) FROM 'path/to/file.csv' CSV HEADER;
 
 INSERT INTO staging_esg_data (
     symbol,
-    company_name,
+    name,
     sector,
     industry,
     total_esg_risk_score,
@@ -100,53 +70,27 @@ UPDATE staging_esg_data
 SET 
     symbol = TRIM(symbol),
     name = TRIM(name),
-    address = TRIM(address),
     sector = TRIM(sector),
     industry = TRIM(industry),
-    controversy_level = TRIM(controversy_level),
     esg_risk_level = TRIM(esg_risk_level);
 
--- Convert empty strings to NULL for optional fields
-UPDATE staging_esg_data
-SET 
-    sector = NULLIF(sector, ''),
-    industry = NULLIF(industry, ''),
-    address = NULLIF(address, ''),
-    description = NULLIF(description, ''),
-    controversy_level = NULLIF(controversy_level, ''),
-    esg_risk_level = NULLIF(esg_risk_level, '');
+-- Validate required fields
+DELETE FROM staging_esg_data
+WHERE symbol IS NULL 
+   OR symbol = '' 
+   OR name IS NULL 
+   OR name = '';
 
--- Validate and cap employee counts
-UPDATE staging_esg_data
-SET full_time_employees = NULL
-WHERE full_time_employees < 0 
-   OR full_time_employees > 10000000;  -- Cap at 10 million (data validation)
-
--- Ensure risk scores are within valid range (0-100)
-UPDATE staging_esg_data
-SET 
-    total_esg_risk_score = NULL
-WHERE total_esg_risk_score < 0 OR total_esg_risk_score > 100;
-
-UPDATE staging_esg_data
-SET 
-    environment_risk_score = NULL
-WHERE environment_risk_score < 0 OR environment_risk_score > 100;
-
-UPDATE staging_esg_data
-SET 
-    social_risk_score = NULL
-WHERE social_risk_score < 0 OR social_risk_score > 100;
-
-UPDATE staging_esg_data
-SET 
-    governance_risk_score = NULL
-WHERE governance_risk_score < 0 OR governance_risk_score > 100;
-
-UPDATE staging_esg_data
-SET 
-    controversy_score = NULL
-WHERE controversy_score < 0 OR controversy_score > 100;
+-- Validate numeric ranges
+DELETE FROM staging_esg_data
+WHERE total_esg_risk_score < 0 
+   OR total_esg_risk_score > 100
+   OR environment_risk_score < 0
+   OR environment_risk_score > 50
+   OR social_risk_score < 0
+   OR social_risk_score > 50
+   OR governance_risk_score < 0
+   OR governance_risk_score > 50;
 
 -- ==============================================================================
 -- Step 4: Upsert Data into Main Table
@@ -155,7 +99,7 @@ WHERE controversy_score < 0 OR controversy_score > 100;
 
 INSERT INTO esg_companies (
     symbol,
-    company_name,
+    name,
     sector,
     industry,
     total_esg_risk_score,
@@ -169,7 +113,7 @@ INSERT INTO esg_companies (
 )
 SELECT 
     symbol,
-    company_name,
+    name,
     sector,
     industry,
     total_esg_risk_score,
@@ -182,11 +126,11 @@ SELECT
     esg_risk_level
 FROM staging_esg_data
 WHERE symbol IS NOT NULL 
-  AND company_name IS NOT NULL  -- Ensure required fields are present
+  AND name IS NOT NULL  -- Ensure required fields are present
 ON CONFLICT (symbol) 
 DO UPDATE SET
     -- Update all fields with new data
-    company_name = EXCLUDED.company_name,
+    name = EXCLUDED.name,
     sector = EXCLUDED.sector,
     industry = EXCLUDED.industry,
     total_esg_risk_score = EXCLUDED.total_esg_risk_score,
@@ -198,23 +142,9 @@ DO UPDATE SET
     esg_risk_percentile = EXCLUDED.esg_risk_percentile,
     esg_risk_level = EXCLUDED.esg_risk_level,
     updated_at = CURRENT_TIMESTAMP;
-    social_risk_score = EXCLUDED.social_risk_score,
-    controversy_level = EXCLUDED.controversy_level,
-    controversy_score = EXCLUDED.controversy_score,
-    esg_risk_percentile = EXCLUDED.esg_risk_percentile,
-    esg_risk_level = EXCLUDED.esg_risk_level,
-    updated_at = NOW()  -- Timestamp will be updated by trigger, but explicit is clear
-WHERE 
-    -- Only update if data has actually changed (optimization)
-    esg_companies.name IS DISTINCT FROM EXCLUDED.name OR
-    esg_companies.total_esg_risk_score IS DISTINCT FROM EXCLUDED.total_esg_risk_score OR
-    esg_companies.environment_risk_score IS DISTINCT FROM EXCLUDED.environment_risk_score OR
-    esg_companies.social_risk_score IS DISTINCT FROM EXCLUDED.social_risk_score OR
-    esg_companies.governance_risk_score IS DISTINCT FROM EXCLUDED.governance_risk_score OR
-    esg_companies.controversy_score IS DISTINCT FROM EXCLUDED.controversy_score;
 
 -- ==============================================================================
--- Step 5: Post-Import Statistics and Validation
+-- Step 5: Post-Import Statistics
 -- ==============================================================================
 
 DO $$
@@ -222,81 +152,30 @@ DECLARE
     total_rows INT;
     rows_with_scores INT;
     sectors_count INT;
-    avg_esg_score NUMERIC;
 BEGIN
-    -- Count total rows
-    SELECT COUNT(*) INTO total_rows 
-    FROM esg_companies;
+    SELECT COUNT(*) INTO total_rows FROM esg_companies;
+    SELECT COUNT(*) INTO rows_with_scores FROM esg_companies WHERE total_esg_risk_score IS NOT NULL;
+    SELECT COUNT(DISTINCT sector) INTO sectors_count FROM esg_companies;
     
-    -- Count rows with ESG scores
-    SELECT COUNT(*) INTO rows_with_scores 
-    FROM esg_companies 
-    WHERE total_esg_risk_score IS NOT NULL;
-    
-    -- Count unique sectors
-    SELECT COUNT(DISTINCT sector) INTO sectors_count 
-    FROM esg_companies 
-    WHERE sector IS NOT NULL;
-    
-    -- Calculate average ESG score
-    SELECT ROUND(AVG(total_esg_risk_score)::NUMERIC, 2) INTO avg_esg_score
-    FROM esg_companies 
-    WHERE total_esg_risk_score IS NOT NULL;
-    
-    -- Display import summary
-    RAISE NOTICE '========================================';
-    RAISE NOTICE 'ESG DATA IMPORT COMPLETED';
-    RAISE NOTICE '========================================';
-    RAISE NOTICE 'Total companies in database: %', total_rows;
-    RAISE NOTICE 'Companies with ESG scores: %', rows_with_scores;
-    RAISE NOTICE 'Unique sectors: %', sectors_count;
-    RAISE NOTICE 'Average ESG risk score: %', avg_esg_score;
-    RAISE NOTICE '========================================';
-    
-    -- Warn if data quality issues detected
-    IF rows_with_scores < (total_rows * 0.5) THEN
-        RAISE WARNING 'More than 50%% of companies are missing ESG scores';
-    END IF;
-    
-    IF sectors_count < 5 THEN
-        RAISE WARNING 'Only % distinct sectors found - data may be incomplete', sectors_count;
-    END IF;
+    RAISE NOTICE 'Import completed:';
+    RAISE NOTICE '- Total companies: %', total_rows;
+    RAISE NOTICE '- Companies with ESG scores: %', rows_with_scores;
+    RAISE NOTICE '- Unique sectors: %', sectors_count;
 END $$;
 
--- ==============================================================================
--- Step 6: Cleanup and Analysis Recommendations
--- ==============================================================================
-
--- Analyze table for query optimization
-ANALYZE esg_companies;
-
--- Vacuum if needed (removes dead tuples after large imports)
--- VACUUM ANALYZE esg_companies;
+-- Show sample of imported data
+SELECT 
+    'Sample Data' as status,
+    symbol,
+    name,
+    sector,
+    total_esg_risk_score,
+    esg_risk_level
+FROM esg_companies 
+ORDER BY symbol 
+LIMIT 10;
 
 COMMIT;
-
--- ==============================================================================
--- Post-Import Verification Queries
--- ==============================================================================
-
--- Uncomment to run verification queries after import:
-
--- Check for duplicates
--- SELECT symbol, COUNT(*) 
--- FROM esg_companies 
--- GROUP BY symbol 
--- HAVING COUNT(*) > 1;
-
--- Check data completeness
--- SELECT 
---     COUNT(*) as total_companies,
---     COUNT(total_esg_risk_score) as with_esg_score,
---     COUNT(sector) as with_sector,
---     COUNT(industry) as with_industry
--- FROM esg_companies;
-
--- View sample of imported data
--- SELECT * FROM esg_companies LIMIT 10;
 
 -- ==============================================================================
 -- End of Data Import Script
