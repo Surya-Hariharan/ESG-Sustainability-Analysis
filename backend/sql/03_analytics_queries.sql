@@ -397,10 +397,13 @@ SELECT
     COUNT(sector) as with_sector,
     COUNT(industry) as with_industry,
     COUNT(controversy_score) as with_controversy,
-    ROUND(
-        COUNT(total_esg_risk_score) * 100.0 / COUNT(*), 
-        2
-    ) as pct_complete
+    CASE 
+        WHEN COUNT(*) = 0 THEN 0
+        ELSE ROUND(
+            COUNT(total_esg_risk_score) * 100.0 / COUNT(*), 
+            2
+        )
+    END as pct_complete
 FROM esg_companies;
 
 -- Recent Updates Check

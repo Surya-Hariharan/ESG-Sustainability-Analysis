@@ -155,16 +155,13 @@ WHERE controversy_score < 0 OR controversy_score > 100;
 
 INSERT INTO esg_companies (
     symbol,
-    name,
-    address,
+    company_name,
     sector,
     industry,
-    full_time_employees,
-    description,
     total_esg_risk_score,
     environment_risk_score,
-    governance_risk_score,
     social_risk_score,
+    governance_risk_score,
     controversy_level,
     controversy_score,
     esg_risk_percentile,
@@ -172,35 +169,35 @@ INSERT INTO esg_companies (
 )
 SELECT 
     symbol,
-    name,
-    address,
+    company_name,
     sector,
     industry,
-    full_time_employees,
-    description,
     total_esg_risk_score,
     environment_risk_score,
-    governance_risk_score,
     social_risk_score,
+    governance_risk_score,
     controversy_level,
     controversy_score,
     esg_risk_percentile,
     esg_risk_level
 FROM staging_esg_data
 WHERE symbol IS NOT NULL 
-  AND name IS NOT NULL  -- Ensure required fields are present
+  AND company_name IS NOT NULL  -- Ensure required fields are present
 ON CONFLICT (symbol) 
 DO UPDATE SET
     -- Update all fields with new data
-    name = EXCLUDED.name,
-    address = EXCLUDED.address,
+    company_name = EXCLUDED.company_name,
     sector = EXCLUDED.sector,
     industry = EXCLUDED.industry,
-    full_time_employees = EXCLUDED.full_time_employees,
-    description = EXCLUDED.description,
     total_esg_risk_score = EXCLUDED.total_esg_risk_score,
     environment_risk_score = EXCLUDED.environment_risk_score,
+    social_risk_score = EXCLUDED.social_risk_score,
     governance_risk_score = EXCLUDED.governance_risk_score,
+    controversy_level = EXCLUDED.controversy_level,
+    controversy_score = EXCLUDED.controversy_score,
+    esg_risk_percentile = EXCLUDED.esg_risk_percentile,
+    esg_risk_level = EXCLUDED.esg_risk_level,
+    updated_at = CURRENT_TIMESTAMP;
     social_risk_score = EXCLUDED.social_risk_score,
     controversy_level = EXCLUDED.controversy_level,
     controversy_score = EXCLUDED.controversy_score,
