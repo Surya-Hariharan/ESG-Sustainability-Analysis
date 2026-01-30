@@ -131,6 +131,3 @@ npm run dev
 ## 📧 Contact
 
 **Surya Hariharan** - [@Surya-Hariharan](https://github.com/Surya-Hariharan)
-
----
-**Built with ❤️ for a sustainable future** 🌍
