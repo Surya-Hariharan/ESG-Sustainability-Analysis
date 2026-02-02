@@ -741,6 +741,7 @@ We welcome contributions from the community! Here's how to get started:
 git clone https://github.com/your-username/ESG-Sustainability-Analysis.git
 cd ESG-Sustainability-Analysis
 
+<<<<<<< HEAD
 # 3. Create feature branch
 git checkout -b feature/amazing-feature
 
@@ -1054,3 +1055,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 **🌱 Built with ❤️ for a Sustainable Future | 🚀 Production-Ready | 🤖 AI-Powered | 📊 Enterprise-Grade**
 
 *Transforming ESG analytics through intelligent automation and cutting-edge technology* 🌍
+=======
+**Surya Hariharan** - [@Surya-Hariharan](https://github.com/Surya-Hariharan)
+>>>>>>> 66f0068e734ca122b60481d892251e144710e229
